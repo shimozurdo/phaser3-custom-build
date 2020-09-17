@@ -1,21 +1,10 @@
 {
   "name": "phaser3-custom-build",
   "version": "1.0.2",
-  "description": "",
+  "description": "Custom Phaser 3 build for Jamming the Curve",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --display-modules",
-    "buildlog": "webpack --json --profile > webpack.build-log.json",
-    "buildsprite": "webpack --config webpack.config-sprite.js --display-modules",
-    "buildspritelog": "webpack --config webpack.config-sprite.js --json --profile > webpack.build-sprite-log.json",
-    "buildboth": "webpack --config webpack.config-both.js --display-modules",
-    "buildbothlog": "webpack --config webpack.config-both.js --json --profile > webpack.build-both-log.json",
-    "buildspritesmall": "webpack --config webpack.config-sprite-small-loader.js --display-modules",
-    "buildspritesmalllog": "webpack --config webpack.config-sprite-small-loader.js --json --profile > webpack.build-sprite-small-loader-log.json",
-    "buildfull": "webpack --config webpack.config-full.js --display-modules",
-    "buildfulllog": "webpack --config webpack.config-full.js --json --profile > webpack.build-full-log.json",
-    "buildcore": "webpack --config webpack.config-core.js --display-modules",
-    "buildcorelog": "webpack --config webpack.config-core.js --json --profile > webpack.build-core-log.json"
+    "build": "webpack --display-modules"    
   },
   "repository": {
     "type": "git",
@@ -29,10 +18,10 @@
   "homepage": "https://github.com/photonstorm/phaser3-custom-build#readme",
   "dependencies": {
     "clean-webpack-plugin": "^3.0.0",
-    "eventemitter3": "^4.0.0",
-    "phaser": "^3.20.1",
+    "eventemitter3": "^4.0.7",
+    "phaser": "^3.24.1",
     "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
   }
 }
