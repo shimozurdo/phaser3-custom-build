@@ -1,10 +1,10 @@
 {
-  "name": "phaser3-custom-build",
-  "version": "1.0.2",
+  "name": "saving-the-day",
+  "version": "0.0.3",
   "description": "Custom Phaser 3 build for Jamming the Curve",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --display-modules"    
+    "build": "webpack --display-modules"
   },
   "repository": {
     "type": "git",

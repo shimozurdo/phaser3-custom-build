@@ -48,11 +48,12 @@ var Phaser = {
     Input: require('input'),
     Loader: {
         FileTypes: {
-            ImageFile: require('loader/filetypes/ImageFile'),
             AudioFile: require('loader/filetypes/AudioFile'),
-            SpriteSheetFile: require('loader/filetypes/SpriteSheetFile'),
-            ScriptFile: require('loader/filetypes/ScriptFile'),
             BitmapFontFile: require('loader/filetypes/BitmapFontFile'),
+            ImageFile: require('loader/filetypes/ImageFile'),
+            TilemapJSONFile: require('loader/filetypes/TilemapJSONFile'),
+            SpriteSheetFile: require('loader/filetypes/SpriteSheetFile'),
+            ScriptFile: require('loader/filetypes/ScriptFile'),            
         },
         LoaderPlugin: require('loader/LoaderPlugin')
     },
@@ -62,8 +63,9 @@ var Phaser = {
     Scene: require('scene/Scene'),
     Scenes: require('scene'),
     Sound: require('sound'),
-    Tweens: require('tweens'),
-    Time: require('time')
+    TileMaps: require('tilemaps'),
+    Time: require('time'),
+    Tweens: require('tweens')
 
 };
 

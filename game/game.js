@@ -16,8 +16,16 @@ var preloadScene = new Phaser.Class({
         this.load.image('title-background', 'assets/title-background.png');
         this.load.image('highway', 'assets/highway.png');
         this.load.image('button', 'assets/button.png');
+        this.load.image('tileSetImg', 'assets/tileSet.png');
         // sprite sheets
         this.load.spritesheet('memok1', 'assets/memok1.png', { frameWidth: 48, frameHeight: 64 });
+        this.load.spritesheet('ada', 'assets/ada.png', { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet('evan', 'assets/evan.png', { frameWidth: 48, frameHeight: 48 });
+        // Json
+        this.load.tilemapTiledJSON('map', 'assets/tileMap.json');
+        // audio
+        this.load.audio('pleasant-creek-loop', ['assets/pleasant-creek-loop.mp3', 'assets/pleasant-creek-loop.ogg']);
+        this.load.audio('intro-theme', ['assets/intro-theme.mp3', 'assets/intro-theme.ogg']);
 
         var width = this.cameras.main.width;
         var height = this.cameras.main.height;
@@ -97,7 +105,7 @@ var preloadScene = new Phaser.Class({
 var titleScene = new Phaser.Class({
     Extends: Phaser.Scene,
     initialize:
-        function PreloadScene() {
+        function titleScene() {
             Phaser.Scene.call(this, 'titleScene');
         },
     preload: function () {
@@ -105,6 +113,9 @@ var titleScene = new Phaser.Class({
         this.height = this.cameras.main.height;
     },
     create: function () {
+        var music = this.sound.add("intro-theme");
+        music.play();
+
         this.titleBg = this.add.tileSprite(topBackgroundXOrigin, topBackgroundYOrigin, imageBaseWidth, imageBaseHeight, 'title-background');
         this.titleBg.setScrollFactor(0);
 
@@ -159,22 +170,58 @@ var titleScene = new Phaser.Class({
         });
 
         playBtn.on('pointerup', function () {
-
+            music.stop();
+            this.scene.start('gameScene');
         }, this);
 
         this.memok1 = this.add.sprite(this.width / 2, this.height - 80, 'memok1').setOrigin(0.5);
         this.memok1.play('fliying');
 
         this.add.bitmapText(this.width / 2, this.height - 10, "gem", "A game by shimozurdo", 18).setOrigin(.5);
+
     }, update: function () {
         this.titleBg.tilePositionX += .5;
         this.highwayBg.tilePositionX += .3;
     }
 });
 
+var gameScene = new Phaser.Class({
+    Extends: Phaser.Scene,
+    initialize:
+        function gameScene() {
+            Phaser.Scene.call(this, 'gameScene');
+        },
+    preload: function () {
+        this.width = this.cameras.main.width;
+        this.height = this.cameras.main.height;
+    },
+    create: function () {
+        this.cameras.main.setBackgroundColor('#55648C')
+        var map = this.make.tilemap({ key: 'map' });
+        var tileSet = map.addTilesetImage('tileSet', 'tileSetImg');
+        var tileMap = map.createDynamicLayer('staticObjects', tileSet, 0, 0);
+        // this.tileMap.setCollisionByProperty({ 'rigidBody': true });
+
+        var music = this.sound.add("pleasant-creek-loop");
+        music.play();
+
+        this.anims.create({
+            key: 'walk',
+            frames: this.anims.generateFrameNumbers('ada'),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.evan = this.add.sprite(this.width / 2, this.height / 2, 'ada').setOrigin(0.5);
+        this.evan.play('walk');
+
+    }, update: function () {
+
+    }
+});
+
 var config = {
     title: "Saving the day",
-    version: '0.0.2',
     type: Phaser.AUTO,
     pixelArt: true,
     scale: {
@@ -184,7 +231,7 @@ var config = {
         width: 800,
         height: 450
     },
-    scene: [preloadScene, titleScene],
+    scene: [preloadScene, titleScene, gameScene],
     dom: {
         createContainer: true
     },
