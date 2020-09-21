@@ -17,8 +17,14 @@ var preloadScene = new Phaser.Class({
         this.load.image('highway', 'assets/highway.png');
         this.load.image('button', 'assets/button.png');
         this.load.image('tileSetImg', 'assets/tileSet.png');
+        this.load.image('bucket', 'assets/bucket.png');
+        this.load.image('mask', 'assets/mask.png');
+        this.load.image('vaccine', 'assets/vaccine.png');
+        this.load.image('ambulance', 'assets/ambulance.png');
+        this.load.image('boss', 'assets/boss.png');
         // sprite sheets
-        this.load.spritesheet('memok1', 'assets/memok1.png', { frameWidth: 48, frameHeight: 64 });
+        this.load.spritesheet('memok', 'assets/memok.png', { frameWidth: 48, frameHeight: 64 });
+        this.load.spritesheet('wilmer', 'assets/wilmer.png', { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet('ada', 'assets/ada.png', { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet('evan', 'assets/evan.png', { frameWidth: 48, frameHeight: 48 });
         // Json
@@ -89,11 +95,15 @@ var preloadScene = new Phaser.Class({
             loadingText.destroy();
             percentText.destroy();
             assetText.destroy();
-
+            this.sound.play("intro-theme", {
+                volume: .5,
+                loop: true,
+                delay: 0
+            });
             this.time.addEvent({
                 delay: 2000,
                 callback: () => {
-                    this.scene.sleep("preload");
+                    this.scene.stop("preload");
                     this.scene.start("titleScene");
                 },
                 loop: false
@@ -113,8 +123,6 @@ var titleScene = new Phaser.Class({
         this.height = this.cameras.main.height;
     },
     create: function () {
-        var music = this.sound.add("intro-theme");
-        music.play();
 
         this.titleBg = this.add.tileSprite(topBackgroundXOrigin, topBackgroundYOrigin, imageBaseWidth, imageBaseHeight, 'title-background');
         this.titleBg.setScrollFactor(0);
@@ -152,7 +160,7 @@ var titleScene = new Phaser.Class({
 
         this.anims.create({
             key: 'fliying',
-            frames: this.anims.generateFrameNumbers('memok1'),
+            frames: this.anims.generateFrameNumbers('memok'),
             frameRate: 10,
             repeat: -1
         });
@@ -170,12 +178,12 @@ var titleScene = new Phaser.Class({
         });
 
         playBtn.on('pointerup', function () {
-            music.stop();
+            this.game.sound.stopAll();
             this.scene.start('gameScene');
         }, this);
 
-        this.memok1 = this.add.sprite(this.width / 2, this.height - 80, 'memok1').setOrigin(0.5);
-        this.memok1.play('fliying');
+        this.memok = this.add.sprite(this.width / 2, this.height - 80, 'memok').setOrigin(0.5);
+        this.memok.play('fliying');
 
         this.add.bitmapText(this.width / 2, this.height - 10, "gem", "A game by shimozurdo", 18).setOrigin(.5);
 
@@ -194,17 +202,18 @@ var gameScene = new Phaser.Class({
     preload: function () {
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
+        this.gameOver = false;
+        this.gameStarted = false;
     },
     create: function () {
-        this.cameras.main.setBackgroundColor('#55648C')
-        var map = this.make.tilemap({ key: 'map' });
-        var tileSet = map.addTilesetImage('tileSet', 'tileSetImg');
-        var tileMap = map.createDynamicLayer('staticObjects', tileSet, 0, 0);
-        // this.tileMap.setCollisionByProperty({ 'rigidBody': true });
+        //MUSIC
+        this.sound.play("pleasant-creek-loop", {
+            volume: .5,
+            loop: true,
+            delay: 0
+        });
 
-        var music = this.sound.add("pleasant-creek-loop");
-        music.play();
-
+        // ANIMATIONS
         this.anims.create({
             key: 'walk',
             frames: this.anims.generateFrameNumbers('ada'),
@@ -212,10 +221,91 @@ var gameScene = new Phaser.Class({
             repeat: -1
         });
 
-        this.evan = this.add.sprite(this.width / 2, this.height / 2, 'ada').setOrigin(0.5);
-        this.evan.play('walk');
+        this.anims.create({
+            key: 'fliying',
+            frames: this.anims.generateFrameNumbers('memok'),
+            frameRate: 4,
+            repeat: -1
+        });
 
-    }, update: function () {
+        this.anims.create({
+            key: 'idle',
+            frames: this.anims.generateFrameNumbers('wilmer'),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        // GROUPS AND PLAYERS
+        this.wilmersGrp = this.add.group();
+        this.peopleGrp = this.add.group();
+
+        // BACKGROUND
+        this.cameras.main.setBackgroundColor('#55648C')
+        var map = this.make.tilemap({ key: 'map' });
+        var tileSet = map.addTilesetImage('tileSet', 'tileSetImg');
+        map.createDynamicLayer('staticObjects', tileSet, 0, 0);
+
+        var textLayer = map.createDynamicLayer('text', tileSet, 0, 0);
+        textLayer.visible = false;
+
+        this.add.bitmapText(this.width - 32, 16, "gem", "items", 22).setOrigin(.5);
+
+        // GAME OBJECTS
+        var bucketBtn = this.add.image(this.width - 32, 64, "bucket").setOrigin(.5).setInteractive({ cursor: 'pointer' });
+        bucketBtn.on('pointerover', function () {
+            this.setTint(0xfeae34);
+        });
+        bucketBtn.on('pointerout', function () {
+            this.clearTint();
+        });
+
+        var maskBtn = this.add.image(this.width - 32, 128, "mask").setOrigin(.5).setInteractive({ cursor: 'pointer' });
+        maskBtn.on('pointerover', function () {
+            this.setTint(0xfeae34);
+        });
+        maskBtn.on('pointerout', function () {
+            this.clearTint();
+        });
+
+        var vaccineBtn = this.add.image(this.width - 32, 192, "vaccine").setOrigin(.5).setInteractive({ cursor: 'pointer' });
+        vaccineBtn.on('pointerover', function () {
+            this.setTint(0xfeae34);
+        });
+        vaccineBtn.on('pointerout', function () {
+            this.clearTint();
+        });
+
+        var ambulanceBtn = this.add.image(this.width - 32, 256, "ambulance").setOrigin(.5).setInteractive({ cursor: 'pointer' });
+        ambulanceBtn.on('pointerover', function () {
+            this.setTint(0xfeae34);
+        });
+        ambulanceBtn.on('pointerout', function () {
+            this.clearTint();
+        });
+
+        var posWilmerX = 224;
+        for (let i = 0; i < 5; i++) {
+            var wilmer = this.add.sprite(posWilmerX - 16, this.height - 30, 'dude');
+            wilmer.setName("Wilmer" + 1);
+            wilmer.anims.play('idle');
+            this.wilmersGrp.add(wilmer);
+            posWilmerX += 96;
+        }
+
+        this.memok = this.add.sprite(this.width / 2, this.height / 2, 'memok').setOrigin(0.5);
+        this.memok.play('fliying');
+
+        this.boss = this.add.sprite(176, 80, 'boss').setOrigin(0.5);
+        this.boss.visible = false;
+
+        this.time.addEvent({
+            delay: 2000,
+            callback: () => {
+                textLayer.visible = true;
+                this.boss.visible = true;
+            },
+            loop: false
+        });
 
     }
 });
