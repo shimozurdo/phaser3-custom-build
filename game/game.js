@@ -5,33 +5,37 @@ var preloadScene = new Phaser.Class({
     initialize:
 
         function PreloadScene() {
-            Phaser.Scene.call(this, 'preloadScene');
+            Phaser.Scene.call(this, "preloadScene");
         },
 
     preload: function () {
-        // fonts
-        this.load.bitmapFont('gem', 'assets/gem.png', 'assets/gem.xml');
+        // font
+        this.load.bitmapFont("gem", "assets/gem.png", "assets/gem.xml");
         // static images
-        this.load.image('logo', 'assets/logo.png');
-        this.load.image('title-background', 'assets/title-background.png');
-        this.load.image('highway', 'assets/highway.png');
-        this.load.image('button', 'assets/button.png');
-        this.load.image('tileSetImg', 'assets/tileSet.png');
-        this.load.image('bucket', 'assets/bucket.png');
-        this.load.image('mask', 'assets/mask.png');
-        this.load.image('vaccine', 'assets/vaccine.png');
-        this.load.image('ambulance', 'assets/ambulance.png');
-        this.load.image('boss', 'assets/boss.png');
+        this.load.image("logo", "assets/logo.png");
+        this.load.image("title-background", "assets/title-background.png");
+        this.load.image("highway", "assets/highway.png");
+        this.load.image("button", "assets/button.png");
+        this.load.image("tileSetImg", "assets/tileSet.png");
+        this.load.image("bucket", "assets/bucket.png");
+        this.load.image("mask", "assets/mask.png");
+        this.load.image("vaccine", "assets/vaccine.png");
+        this.load.image("ambulance", "assets/ambulance.png");
+        this.load.image("manager", "assets/manager.png");
+        this.load.image("close", "assets/close.png");
         // sprite sheets
-        this.load.spritesheet('memok', 'assets/memok.png', { frameWidth: 48, frameHeight: 64 });
-        this.load.spritesheet('wilmer', 'assets/wilmer.png', { frameWidth: 48, frameHeight: 48 });
-        this.load.spritesheet('ada', 'assets/ada.png', { frameWidth: 48, frameHeight: 48 });
-        this.load.spritesheet('evan', 'assets/evan.png', { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("more-text", "assets/more-text.png", { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet("cross", "assets/cross.png", { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet("help", "assets/help.png", { frameWidth: 64, frameHeight: 32 });
+        this.load.spritesheet("memok", "assets/memok.png", { frameWidth: 48, frameHeight: 64 });
+        this.load.spritesheet("wilmer", "assets/wilmer.png", { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("ada", "assets/ada.png", { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("evan", "assets/evan.png", { frameWidth: 48, frameHeight: 48 });
         // Json
-        this.load.tilemapTiledJSON('map', 'assets/tileMap.json');
+        this.load.tilemapTiledJSON("map", "assets/tileMap.json");
         // audio
-        this.load.audio('pleasant-creek-loop', ['assets/pleasant-creek-loop.mp3', 'assets/pleasant-creek-loop.ogg']);
-        this.load.audio('intro-theme', ['assets/intro-theme.mp3', 'assets/intro-theme.ogg']);
+        this.load.audio("pleasant-creek-loop", ["assets/pleasant-creek-loop.mp3", "assets/pleasant-creek-loop.ogg"]);
+        this.load.audio("intro-theme", ["assets/intro-theme.mp3", "assets/intro-theme.ogg"]);
 
         var width = this.cameras.main.width;
         var height = this.cameras.main.height;
@@ -44,10 +48,10 @@ var preloadScene = new Phaser.Class({
         var loadingText = this.make.text({
             x: width / 2,
             y: height / 2 - 50,
-            text: 'Loading...',
+            text: "Loading...",
             style: {
-                font: '28px monospace',
-                fill: '#ffffff'
+                font: "28px monospace",
+                fill: "#ffffff"
             }
         });
 
@@ -56,10 +60,10 @@ var preloadScene = new Phaser.Class({
         var percentText = this.make.text({
             x: width / 2,
             y: height / 2 - 5,
-            text: '0%',
+            text: "0%",
             style: {
-                font: '28px monospace',
-                fill: '#ffffff'
+                font: "28px monospace",
+                fill: "#ffffff"
             }
         });
         percentText.setOrigin(0.5, 0.5);
@@ -67,27 +71,27 @@ var preloadScene = new Phaser.Class({
         var assetText = this.make.text({
             x: width / 2,
             y: height / 2 + 50,
-            text: '',
+            text: "",
             style: {
-                font: '18px monospace',
-                fill: '#ffffff'
+                font: "18px monospace",
+                fill: "#ffffff"
             }
         });
         assetText.setOrigin(0.5, 0.5);
 
-        this.load.on('progress', function (value) {
-            percentText.setText(parseInt(value * 100) + '%');
+        this.load.on("progress", function (value) {
+            percentText.setText(parseInt(value * 100) + "%");
             progressBar.clear();
             progressBar.fillStyle(0xffffff, 1);
             progressBar.fillRect((width / 2) - (300 / 2), (height / 2) - (30 / 2), 300 * value, 30);
         }, this);
 
-        this.load.on('fileprogress', function (file) {
-            assetText.setText('Loading asset: ' + file.key);
+        this.load.on("fileprogress", function (file) {
+            assetText.setText("Loading asset: " + file.key);
         }, this);
 
-        this.load.on('complete', function () {
-            var logo = this.add.image(width / 2, height / 2, 'logo');
+        this.load.on("complete", function () {
+            var logo = this.add.image(width / 2, height / 2, "logo");
             logo.setScale(.5);
 
             progressBar.destroy();
@@ -95,16 +99,16 @@ var preloadScene = new Phaser.Class({
             loadingText.destroy();
             percentText.destroy();
             assetText.destroy();
-            this.sound.play("intro-theme", {
-                volume: .5,
-                loop: true,
-                delay: 0
-            });
+            // this.sound.play("intro-theme", {
+            //     volume: .5,
+            //     loop: true,
+            //     delay: 0
+            // });
             this.time.addEvent({
                 delay: 2000,
                 callback: () => {
                     this.scene.stop("preload");
-                    this.scene.start("titleScene");
+                    this.scene.start("gameScene");
                 },
                 loop: false
             });
@@ -116,7 +120,7 @@ var titleScene = new Phaser.Class({
     Extends: Phaser.Scene,
     initialize:
         function titleScene() {
-            Phaser.Scene.call(this, 'titleScene');
+            Phaser.Scene.call(this, "titleScene");
         },
     preload: function () {
         this.width = this.cameras.main.width;
@@ -124,10 +128,10 @@ var titleScene = new Phaser.Class({
     },
     create: function () {
 
-        this.titleBg = this.add.tileSprite(topBackgroundXOrigin, topBackgroundYOrigin, imageBaseWidth, imageBaseHeight, 'title-background');
+        this.titleBg = this.add.tileSprite(topBackgroundXOrigin, topBackgroundYOrigin, imageBaseWidth, imageBaseHeight, "title-background");
         this.titleBg.setScrollFactor(0);
 
-        this.highwayBg = this.add.tileSprite(topBackgroundXOrigin, this.height - 40, imageBaseWidth, 96, 'highway');
+        this.highwayBg = this.add.tileSprite(topBackgroundXOrigin, this.height - 40, imageBaseWidth, 96, "highway");
         this.highwayBg.setScrollFactor(0);
 
         var titleText = this.add.bitmapText(this.width / 2, (this.height / 2) - 100, "gem", "Saving the day", 40).setOrigin(0.5);
@@ -140,9 +144,9 @@ var titleScene = new Phaser.Class({
             targets: titleText,
             alpha: { from: .2, to: 1 },
             props: {
-                y: { value: '+=10', duration: 2000, ease: 'Sine.easeInOut' },
+                y: { value: "+=10", duration: 2000, ease: "Sine.easeInOut" },
             },
-            ease: 'Linear',
+            ease: "Linear",
             duration: 2000,
             repeat: -1,
             yoyo: true
@@ -151,7 +155,7 @@ var titleScene = new Phaser.Class({
         this.tweens.add({
             targets: titleTextB,
             props: {
-                y: { value: '+=10', duration: 2000, ease: 'Sine.easeInOut' },
+                y: { value: "+=10", duration: 2000, ease: "Sine.easeInOut" },
             },
             duration: 2000,
             repeat: -1,
@@ -159,31 +163,31 @@ var titleScene = new Phaser.Class({
         });
 
         this.anims.create({
-            key: 'fliying',
-            frames: this.anims.generateFrameNumbers('memok'),
+            key: "fliying",
+            frames: this.anims.generateFrameNumbers("memok"),
             frameRate: 10,
             repeat: -1
         });
 
-        var playBtn = this.add.sprite(this.width / 2, this.height / 2, 'button').setOrigin(0.5).setInteractive({ cursor: 'pointer' });;
+        var playBtn = this.add.sprite(this.width / 2, this.height / 2, "button").setOrigin(0.5).setInteractive({ cursor: "pointer" });;
         var playTxt = this.add.bitmapText(playBtn.x, playBtn.y - 10, "gem", "Play", 34).setOrigin(.5);
         playTxt.setTint(0x353D56);
 
-        playBtn.on('pointerover', function () {
+        playBtn.on("pointerover", function () {
             this.setTint(0xFEAE34);
         });
 
-        playBtn.on('pointerout', function () {
+        playBtn.on("pointerout", function () {
             this.clearTint();
         });
 
-        playBtn.on('pointerup', function () {
+        playBtn.on("pointerup", function () {
             this.game.sound.stopAll();
-            this.scene.start('gameScene');
+            this.scene.start("gameScene");
         }, this);
 
-        this.memok = this.add.sprite(this.width / 2, this.height - 80, 'memok').setOrigin(0.5);
-        this.memok.play('fliying');
+        this.memok = this.add.sprite(this.width / 2, this.height - 80, "memok").setOrigin(0.5);
+        this.memok.play("fliying");
 
         this.add.bitmapText(this.width / 2, this.height - 10, "gem", "A game by shimozurdo", 18).setOrigin(.5);
 
@@ -197,7 +201,7 @@ var gameScene = new Phaser.Class({
     Extends: Phaser.Scene,
     initialize:
         function gameScene() {
-            Phaser.Scene.call(this, 'gameScene');
+            Phaser.Scene.call(this, "gameScene");
         },
     preload: function () {
         this.width = this.cameras.main.width;
@@ -206,106 +210,230 @@ var gameScene = new Phaser.Class({
         this.gameStarted = false;
     },
     create: function () {
-        //MUSIC
-        this.sound.play("pleasant-creek-loop", {
-            volume: .5,
-            loop: true,
-            delay: 0
-        });
-
+        // MUSIC
+        // this.sound.play("pleasant-creek-loop", {
+        //     volume: .5,
+        //     loop: true,
+        //     delay: 0
+        // });
+        // MUSIC
         // ANIMATIONS
         this.anims.create({
-            key: 'walk',
-            frames: this.anims.generateFrameNumbers('ada'),
+            key: "walk",
+            frames: this.anims.generateFrameNumbers("ada"),
             frameRate: 4,
             repeat: -1
         });
 
         this.anims.create({
-            key: 'fliying',
-            frames: this.anims.generateFrameNumbers('memok'),
+            key: "fliying",
+            frames: this.anims.generateFrameNumbers("memok"),
             frameRate: 4,
             repeat: -1
         });
 
         this.anims.create({
-            key: 'idle',
-            frames: this.anims.generateFrameNumbers('wilmer'),
+            key: "idle",
+            frames: this.anims.generateFrameNumbers("wilmer"),
             frameRate: 4,
             repeat: -1
         });
 
+        this.anims.create({
+            key: "blinking",
+            frames: this.anims.generateFrameNumbers("more-text"),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "blinking-info",
+            frames: this.anims.generateFrameNumbers("help"),
+            frameRate: 4,
+            repeat: -1
+        });
+        // ANIMATIONS
         // GROUPS AND PLAYERS
         this.wilmersGrp = this.add.group();
         this.peopleGrp = this.add.group();
-
-        // BACKGROUND
-        this.cameras.main.setBackgroundColor('#55648C')
-        var map = this.make.tilemap({ key: 'map' });
-        var tileSet = map.addTilesetImage('tileSet', 'tileSetImg');
-        map.createDynamicLayer('staticObjects', tileSet, 0, 0);
-
-        var textLayer = map.createDynamicLayer('text', tileSet, 0, 0);
-        textLayer.visible = false;
-
+        this.crossesGrp = this.add.group();
+        this.itemsBtnGroup = this.add.group();
+        // GROUPS AND PLAYERS
+        // BACKGROUND        
+        this.cameras.main.setBackgroundColor("#55648C")
+        var map = this.make.tilemap({ key: "map" });
+        var tileSet = map.addTilesetImage("tileSet", "tileSetImg");
+        map.createDynamicLayer("staticObjects", tileSet, 0, 0);
         this.add.bitmapText(this.width - 32, 16, "gem", "items", 22).setOrigin(.5);
 
+        this.rectBackground = this.add.rectangle(this.width / 2, this.height / 2, this.width, this.height, 0x000);
+        this.rectBackground.alpha = 0.7;
+        this.rectBackground.visible = false;
+        this.rectBackground.setDepth(10);
+
+        this.textLayer = map.createDynamicLayer("text", tileSet, 0, 0);
+        this.textLayer.visible = false;
+        this.textLayer.setDepth(10);
+        // BACKGROUND
         // GAME OBJECTS
-        var bucketBtn = this.add.image(this.width - 32, 64, "bucket").setOrigin(.5).setInteractive({ cursor: 'pointer' });
-        bucketBtn.on('pointerover', function () {
-            this.setTint(0xfeae34);
-        });
-        bucketBtn.on('pointerout', function () {
-            this.clearTint();
+        this.memok = this.add.sprite(this.width / 2, this.height / 2, "memok").setOrigin(0.5);
+        this.memok.play("fliying");
+        this.memok.setDepth(9);
+
+        this.manager = this.add.image(this.width - 32, this.height - 32, "manager").setOrigin(0.5);
+        this.manager.visible = false;
+
+        this.manager2 = this.add.image(176, 80, "manager").setOrigin(0.5);
+        this.manager2.visible = false;
+        this.manager2.setDepth(10);
+
+        var item = this.add.image(this.width - 32, 64, "bucket").setOrigin(.5);
+        item.name = "bucketBtn";
+        this.itemsBtnGroup.add(item);
+
+        item = this.add.image(this.width - 32, 128, "mask").setOrigin(.5);
+        item.name = "maskBtn";
+        this.itemsBtnGroup.add(item);
+
+        item = this.add.image(this.width - 32, 192, "vaccine").setOrigin(.5);
+        item.name = "vaccineBtn";
+        this.itemsBtnGroup.add(item);
+
+        item = this.add.image(this.width - 32, 256, "ambulance").setOrigin(.5);
+        item.name = "ambulanceBtn";
+        this.itemsBtnGroup.add(item);
+
+        item = this.add.sprite(this.manager.x, this.manager.y - 48, "help").setOrigin(0.5);
+        item.name = "helpAlertBtn";
+        item.visible = false;
+        item.play("blinking-info");
+        this.itemsBtnGroup.add(item);
+
+        item = this.add.sprite(624, this.manager2.y + 32, "more-text").setOrigin(0.5);
+        item.name = "moreInfoTextBtn";
+        item.play("blinking");
+        item.visible = false;
+        item.setDepth(10);
+        this.itemsBtnGroup.add(item);
+
+        item = this.add.image(624, this.manager2.y - 32, "close").setOrigin(0.5);
+        item.name = "closeBtn";
+        item.visible = false;
+        item.setDepth(10);
+        this.itemsBtnGroup.add(item);
+
+        this.input.setHitArea(this.itemsBtnGroup.getChildren()).on('pointerover', function (pointer, children) {
+            children.forEach(child => {
+                child.setTint(0xfeae34);
+            });
         });
 
-        var maskBtn = this.add.image(this.width - 32, 128, "mask").setOrigin(.5).setInteractive({ cursor: 'pointer' });
-        maskBtn.on('pointerover', function () {
-            this.setTint(0xfeae34);
-        });
-        maskBtn.on('pointerout', function () {
-            this.clearTint();
+        this.input.setHitArea(this.itemsBtnGroup.getChildren()).on('pointerout', function (pointer, children) {
+            children.forEach(child => {
+                child.clearTint();
+            });
         });
 
-        var vaccineBtn = this.add.image(this.width - 32, 192, "vaccine").setOrigin(.5).setInteractive({ cursor: 'pointer' });
-        vaccineBtn.on('pointerover', function () {
-            this.setTint(0xfeae34);
-        });
-        vaccineBtn.on('pointerout', function () {
-            this.clearTint();
-        });
-
-        var ambulanceBtn = this.add.image(this.width - 32, 256, "ambulance").setOrigin(.5).setInteractive({ cursor: 'pointer' });
-        ambulanceBtn.on('pointerover', function () {
-            this.setTint(0xfeae34);
-        });
-        ambulanceBtn.on('pointerout', function () {
-            this.clearTint();
-        });
+        this.input.setHitArea(this.itemsBtnGroup.getChildren()).on('gameobjectdown', function (pointer, child) {
+            if (child.name === "helpAlertBtn")
+                this.showInfo(true);
+            else if (child.name === "closeBtn")
+                this.showInfo(false);
+        }, this);
 
         var posWilmerX = 224;
-        for (let i = 0; i < 5; i++) {
-            var wilmer = this.add.sprite(posWilmerX - 16, this.height - 30, 'dude');
-            wilmer.setName("Wilmer" + 1);
-            wilmer.anims.play('idle');
+        for (var i = 0; i < 5; i++) {
+            var wilmer = this.add.sprite(posWilmerX - 16, this.height - 30, "dude");
+            wilmer.setName("Wilmer" + i);
+            wilmer.anims.play("idle");
             this.wilmersGrp.add(wilmer);
             posWilmerX += 96;
         }
 
-        this.memok = this.add.sprite(this.width / 2, this.height / 2, 'memok').setOrigin(0.5);
-        this.memok.play('fliying');
+        this.helpAlerTxt = this.add.bitmapText(this.width - 32, this.height - 92, "gem", "INFO!", 14).setOrigin(0.5);
+        this.helpAlerTxt.setTint(0x000);
+        this.helpAlerTxt.visible = false;
 
-        this.boss = this.add.sprite(176, 80, 'boss').setOrigin(0.5);
-        this.boss.visible = false;
+        this.infoTextMain = this.add.bitmapText(this.manager2.x + 32, this.manager2.y - 40, "gem", "", 16);
+        this.infoTextMain.visible = false;
+        this.infoTextMain.setDepth(10);
+        // GAME OBJECTS
 
         this.time.addEvent({
             delay: 2000,
             callback: () => {
-                textLayer.visible = true;
-                this.boss.visible = true;
+                this.showInfo(true);
+                this.typeWriterHandler("how to play");
+                this.updateCrossesOnTheFloor(false);
             },
             loop: false
         });
+    },
+    updateCrossesOnTheFloor: function name(create) {
+        if (create) {
+            var posX = 208;
+            var posY = this.height - 96;
+            var crossIndex = 0;
+            this.time.addEvent({
+                delay: 500,
+                loop: false,
+                repeat: 14,
+                callback: () => {
+                    var cross = this.add.sprite(posX, posY, "cross").setOrigin(.5);
+                    cross.setDepth(1);
+                    cross.setName("cross" + crossIndex);
+                    cross.setFrame(0);
+                    this.crossesGrp.add(cross);
+                    posX += 96;
+                    crossIndex++;
+                    if (crossIndex >= 5) {
+                        crossIndex = 0;
+                        posY -= 96;
+                        posX = 208;
+                    }
+                },
+            });
+        } else {
+
+        }
+    },
+    showInfo: function (showMainText) {
+        this.textLayer.visible = showMainText;
+        this.infoTextMain.visible = showMainText;
+        this.rectBackground.visible = showMainText;
+        this.helpAlerTxt.visible = !showMainText;
+        this.manager.visible = !showMainText;
+        this.manager2.visible = showMainText;
+
+        this.itemsBtnGroup.children.each(function (child) {
+            if (child.name === "closeBtn" || child.name === "moreInfoTextBtn")
+                child.visible = showMainText;
+            else if (child.name === "helpAlertBtn")
+                child.visible = !showMainText;
+        });
+    },
+    typeWriterHandler: function (action) {
+        var textList = [
+            {
+                action: "how to play",
+                text: [
+                    "Lorem ipsum dolor sit amet, consectetur adipisci",
+                    "aliqua. Ut enim ad minim veniam, quis nostrud ext",
+                    "Duis aute irure dolor in reprehenderit in vo repr",
+                    "in reprehenderit in voluptate velit esse cillum d",
+                    "sunt in culpa qui officia deserunt mollit anim id"
+                ]
+            }
+        ];
+
+        var textIndex = textList.findIndex(x => x.action === action);
+        textList[textIndex].text;
+
+        for (var index = 0; index < textList[textIndex].text.length; index++) {
+            this.infoTextMain.text += textList[textIndex].text[index] + "\n";
+        }
+    },
+    update: function () {
 
     }
 });
@@ -316,12 +444,12 @@ var config = {
     pixelArt: true,
     scale: {
         mode: Phaser.Scale.FIT,
-        parent: 'game',
+        parent: "game",
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: 800,
         height: 450
     },
-    scene: [preloadScene, titleScene, gameScene],
+    scene: [preloadScene, gameScene],
     dom: {
         createContainer: true
     },

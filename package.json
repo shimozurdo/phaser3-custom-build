@@ -1,6 +1,6 @@
 {
   "name": "saving-the-day",
-  "version": "0.0.3.1",
+  "version": "0.0.31",
   "description": "Custom Phaser 3 build for Jamming the Curve",
   "main": "index.js",
   "scripts": {
