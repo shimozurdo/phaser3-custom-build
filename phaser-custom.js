@@ -13,6 +13,7 @@ var Phaser = {
     Core: require("core"),
     Class: require("utils/Class"),
     Create: require("create"),
+    Data: require("data"),
     Display: require("display"),
     Events: require("events/EventEmitter"),
     Game: require("core/Game"),
@@ -58,6 +59,12 @@ var Phaser = {
             ScriptFile: require("loader/filetypes/ScriptFile"),
         },
         LoaderPlugin: require("loader/LoaderPlugin")
+    },
+    Math: {
+        Between: require("math/Between")
+    },
+    Physics: {
+        Arcade: require("physics/arcade")
     },
     Plugins: require("plugins"),
     Renderer: require("renderer"),

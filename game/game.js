@@ -31,6 +31,7 @@ var preloadScene = new Phaser.Class({
         this.load.spritesheet("wilmer", "assets/wilmer.png", { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet("ada", "assets/ada.png", { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet("evan", "assets/evan.png", { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("warning", "assets/warning.png", { frameWidth: 8, frameHeight: 16 });
         // Json
         this.load.tilemapTiledJSON("map", "assets/tileMap.json");
         // audio
@@ -59,7 +60,7 @@ var preloadScene = new Phaser.Class({
 
         var percentText = this.make.text({
             x: width / 2,
-            y: height / 2 - 5,
+            y: height / 2,
             text: "0%",
             style: {
                 font: "28px monospace",
@@ -99,17 +100,17 @@ var preloadScene = new Phaser.Class({
             loadingText.destroy();
             percentText.destroy();
             assetText.destroy();
-            // this.sound.play("intro-theme", {
-            //     volume: .5,
-            //     loop: true,
-            //     delay: 0
-            // });
+            this.sound.play("intro-theme", {
+                volume: .5,
+                loop: true,
+                delay: 0
+            });
             this.time.addEvent({
                 delay: 2000,
-                callback: () => {
+                callback: function () {
                     this.scene.stop("preload");
-                    this.scene.start("gameScene");
-                },
+                    this.scene.start("titleScene");
+                }.bind(this),
                 loop: false
             });
         }, this);
@@ -206,20 +207,23 @@ var gameScene = new Phaser.Class({
     preload: function () {
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
+        this.delayGeneral = 200;
         this.gameOver = false;
-        this.gameStarted = false;
+        this.gameStart = false;
+        this.delaySpawnPeople;
+        this.delaySpawnPeopleMS;
     },
     create: function () {
         // MUSIC
-        // this.sound.play("pleasant-creek-loop", {
-        //     volume: .5,
-        //     loop: true,
-        //     delay: 0
-        // });
+        this.sound.play("pleasant-creek-loop", {
+            volume: .5,
+            loop: true,
+            delay: 0
+        });
         // MUSIC
         // ANIMATIONS
         this.anims.create({
-            key: "walk",
+            key: "walking",
             frames: this.anims.generateFrameNumbers("ada"),
             frameRate: 4,
             repeat: -1
@@ -252,8 +256,16 @@ var gameScene = new Phaser.Class({
             frameRate: 4,
             repeat: -1
         });
+
+        this.anims.create({
+            key: "blinking-warning",
+            frames: this.anims.generateFrameNumbers("warning"),
+            frameRate: 2,
+            loop: false
+        });
         // ANIMATIONS
         // GROUPS AND PLAYERS
+        this.progressBarGrp = this.add.group();
         this.wilmersGrp = this.add.group();
         this.peopleGrp = this.add.group();
         this.crossesGrp = this.add.group();
@@ -274,11 +286,41 @@ var gameScene = new Phaser.Class({
         this.textLayer = map.createDynamicLayer("text", tileSet, 0, 0);
         this.textLayer.visible = false;
         this.textLayer.setDepth(10);
+
+        var surplus = 4;
+        var progressBar = this.add.rectangle(this.width - 64 + surplus, 32 + surplus, 56, 56, 0x000).setOrigin(0);
+        progressBar.setDepth(4);
+        progressBar.alpha = 0.7;
+        progressBar.setData({ rechargeTime: 5000 });
+        this.progressBarGrp.add(progressBar);
+
+        progressBar = this.add.rectangle(this.width - 64 + surplus, 96 + surplus, 56, 56, 0x000).setOrigin(0);
+        progressBar.setDepth(4);
+        progressBar.alpha = 0.7;
+        progressBar.setData({ rechargeTime: 10000 });
+        this.progressBarGrp.add(progressBar);
+
+        progressBar = this.add.rectangle(this.width - 64 + surplus, 160 + surplus, 56, 56, 0x000).setOrigin(0);
+        progressBar.setDepth(4);
+        progressBar.alpha = 0.7;
+        progressBar.setData({ rechargeTime: 15000 });
+        this.progressBarGrp.add(progressBar);
+
+        progressBar = this.add.rectangle(this.width - 64 + surplus, 224 + surplus, 56, 56, 0x000).setOrigin(0);
+        progressBar.setDepth(4);
+        progressBar.alpha = 0.7;
+        progressBar.setData({ rechargeTime: 20000 });
+        this.progressBarGrp.add(progressBar);
+
         // BACKGROUND
         // GAME OBJECTS
-        this.memok = this.add.sprite(this.width / 2, this.height / 2, "memok").setOrigin(0.5);
+        this.memok = this.physics.add.sprite(this.width / 2, this.height / 2, "memok").setOrigin(0.5);
         this.memok.play("fliying");
         this.memok.setDepth(9);
+
+        this.warningIcon = this.add.sprite(this.memok.x, this.memok.y - 32, "warning").setOrigin(0.5);
+        this.warningIcon.play("blinking-warning");
+        this.warningIcon.setDepth(9);
 
         this.manager = this.add.image(this.width - 32, this.height - 32, "manager").setOrigin(0.5);
         this.manager.visible = false;
@@ -323,13 +365,13 @@ var gameScene = new Phaser.Class({
         this.itemsBtnGroup.add(item);
 
         this.input.setHitArea(this.itemsBtnGroup.getChildren()).on('pointerover', function (pointer, children) {
-            children.forEach(child => {
+            children.forEach(function (child) {
                 child.setTint(0xfeae34);
             });
         });
 
         this.input.setHitArea(this.itemsBtnGroup.getChildren()).on('pointerout', function (pointer, children) {
-            children.forEach(child => {
+            children.forEach(function (child) {
                 child.clearTint();
             });
         });
@@ -337,8 +379,25 @@ var gameScene = new Phaser.Class({
         this.input.setHitArea(this.itemsBtnGroup.getChildren()).on('gameobjectdown', function (pointer, child) {
             if (child.name === "helpAlertBtn")
                 this.showInfo(true);
-            else if (child.name === "closeBtn")
+            else if (child.name === "closeBtn") {
                 this.showInfo(false);
+                if (!this.gameStart) {
+                    this.updateCrossesOnTheFloor(false);
+                    this.time.addEvent({
+                        delay: this.delayGeneral,
+                        callback: function () {
+                            this.gameStart = true;
+                            this.spawnPeopleConfig(
+                                {
+                                    delaySpawnPeople: 4000,
+                                    delaySpawnPeopleMS: 4000
+                                }
+                            );
+                        }.bind(this),
+                        loop: false
+                    });
+                }
+            }
         }, this);
 
         var posWilmerX = 224;
@@ -350,7 +409,7 @@ var gameScene = new Phaser.Class({
             posWilmerX += 96;
         }
 
-        this.helpAlerTxt = this.add.bitmapText(this.width - 32, this.height - 92, "gem", "INFO!", 14).setOrigin(0.5);
+        this.helpAlerTxt = this.add.bitmapText(this.width - 30, this.height - 80, "gem", "INFO!", 14).setOrigin(0.5);
         this.helpAlerTxt.setTint(0x000);
         this.helpAlerTxt.visible = false;
 
@@ -359,30 +418,33 @@ var gameScene = new Phaser.Class({
         this.infoTextMain.setDepth(10);
         // GAME OBJECTS
 
+        //  Collisions
+        this.physics.add.overlap(this.peopleGrp, this.crossesGrp, this.overlapAPlaceInLine, null, this);
+
         this.time.addEvent({
-            delay: 2000,
-            callback: () => {
+            delay: this.delayGeneral,
+            callback: function () {
                 this.showInfo(true);
                 this.typeWriterHandler("how to play");
-                this.updateCrossesOnTheFloor(false);
-            },
+            }.bind(this),
             loop: false
         });
     },
-    updateCrossesOnTheFloor: function name(create) {
-        if (create) {
+    updateCrossesOnTheFloor: function name(update) {
+        if (!update) {
             var posX = 208;
             var posY = this.height - 96;
             var crossIndex = 0;
-            this.time.addEvent({
-                delay: 500,
+            var timer = this.time.addEvent({
+                delay: 100,
                 loop: false,
                 repeat: 14,
-                callback: () => {
-                    var cross = this.add.sprite(posX, posY, "cross").setOrigin(.5);
+                callback: function () {
+                    var cross = this.physics.add.sprite(posX, posY, "cross").setOrigin(.5);
                     cross.setDepth(1);
-                    cross.setName("cross" + crossIndex);
                     cross.setFrame(0);
+                    cross.setName("cross-" + timer.getRepeatCount());
+                    cross.isBusyPlace = false;
                     this.crossesGrp.add(cross);
                     posX += 96;
                     crossIndex++;
@@ -391,7 +453,7 @@ var gameScene = new Phaser.Class({
                         posY -= 96;
                         posX = 208;
                     }
-                },
+                }.bind(this),
             });
         } else {
 
@@ -406,8 +468,9 @@ var gameScene = new Phaser.Class({
         this.manager2.visible = showMainText;
 
         this.itemsBtnGroup.children.each(function (child) {
-            if (child.name === "closeBtn" || child.name === "moreInfoTextBtn")
+            if (child.name === "closeBtn" || child.name === "moreInfoTextBtn") {
                 child.visible = showMainText;
+            }
             else if (child.name === "helpAlertBtn")
                 child.visible = !showMainText;
         });
@@ -433,7 +496,80 @@ var gameScene = new Phaser.Class({
             this.infoTextMain.text += textList[textIndex].text[index] + "\n";
         }
     },
-    update: function () {
+    spawnPeopleConfig: function (config) {
+        this.delaySpawnPeopleMS = config.delaySpawnPeopleMS;
+        this.delaySpawnPeople = config.delaySpawnPeople;
+    },
+    spawnPeople: function (time) {
+        var person = this.physics.add.sprite(368, 0, "ada").setOrigin(.5);
+        // var personChose = Phaser.Math.Between(0, 1);
+        person.name = "name-" + parseInt((time / 1000));
+        person.setDepth(2);
+        person.play("walking");
+        this.peopleGrp.add(person);
+        return person;
+    },
+    placesAvailableOnTheLine: function () {
+        var crossesPosList = [];
+        this.crossesGrp.children.each(function (child) {
+            crossesPosList.push({
+                name: child.name,
+                x: child.x,
+                y: child.y,
+                isBusyPlace: child.isBusyPlace
+            })
+        });
+        crossesPosList.sort(function (a, b) {
+            if (a.y < b.y) {
+                return 1;
+            }
+            if (a.y > b.y) {
+                return -1;
+            }
+            return 0;
+        });
+
+        var firtsElement = crossesPosList.find(v => v.isBusyPlace === false);
+
+        var availableCrosses = crossesPosList.filter(function (cross) {
+            return cross.y === firtsElement.y && !cross.isBusyPlace;
+        });
+
+        return availableCrosses;
+    },
+    isThePlaceIsAvailable: function (cross) {
+        var availableCrosses = this.placesAvailableOnTheLine();
+        var place = availableCrosses.find(v => v.name === cross.name);
+        return place ? true : false;
+    },
+    findAplaceOnTheLine: function (person) {
+        var availableCrosses = this.placesAvailableOnTheLine();
+        var value = Phaser.Math.Between(0, availableCrosses.length - 1);
+        var cross = this.crossesGrp.getChildren().find(v => v.name === availableCrosses[value].name);
+        this.physics.moveToObject(person, cross, 100);
+    },
+    overlapAPlaceInLine: function (person, cross) {
+        if (person.x > cross.x - 8 &&
+            person.x < cross.x + 8 &&
+            person.y > cross.y - 8 &&
+            person.y < cross.y + 8 &&
+            !cross.isBusyPlace) {
+            if (this.isThePlaceIsAvailable(cross)) {
+                person.setVelocity(0);
+                cross.isBusyPlace = true;
+            }
+        }
+    },
+    update: function (time, delta) {
+        if (this.gameOver || !this.gameStart)
+            return;
+
+        this.delaySpawnPeople -= delta;
+        if (this.delaySpawnPeople < 0) {
+            this.delaySpawnPeople = 40000;
+            var person = this.spawnPeople(time);
+            this.findAplaceOnTheLine(person);
+        }
 
     }
 });
@@ -442,6 +578,10 @@ var config = {
     title: "Saving the day",
     type: Phaser.AUTO,
     pixelArt: true,
+    physics: {
+        default: 'arcade',
+        arcade: { debug: false }
+    },
     scale: {
         mode: Phaser.Scale.FIT,
         parent: "game",
@@ -449,7 +589,7 @@ var config = {
         width: 800,
         height: 450
     },
-    scene: [preloadScene, gameScene],
+    scene: [preloadScene, titleScene, gameScene],
     dom: {
         createContainer: true
     },
