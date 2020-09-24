@@ -1,205 +1,4 @@
-var preloadScene = new Phaser.Class({
-
-    Extends: Phaser.Scene,
-
-    initialize:
-
-        function PreloadScene() {
-            Phaser.Scene.call(this, "preloadScene");
-        },
-
-    preload: function () {
-        // font
-        this.load.bitmapFont("gem", "assets/gem.png", "assets/gem.xml");
-        // static images
-        this.load.image("logo", "assets/logo.png");
-        this.load.image("title-background", "assets/title-background.png");
-        this.load.image("highway", "assets/highway.png");
-        this.load.image("button", "assets/button.png");
-        this.load.image("tileSetImg", "assets/tileSet.png");
-        this.load.image("bucket", "assets/bucket.png");
-        this.load.image("mask", "assets/mask.png");
-        this.load.image("vaccine", "assets/vaccine.png");
-        this.load.image("ambulance", "assets/ambulance.png");
-        this.load.image("manager", "assets/manager.png");
-        this.load.image("close", "assets/close.png");
-        // sprite sheets
-        this.load.spritesheet("more-text", "assets/more-text.png", { frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet("cross", "assets/cross.png", { frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet("help", "assets/help.png", { frameWidth: 64, frameHeight: 32 });
-        this.load.spritesheet("memok", "assets/memok.png", { frameWidth: 48, frameHeight: 64 });
-        this.load.spritesheet("wilmer", "assets/wilmer.png", { frameWidth: 48, frameHeight: 48 });
-        this.load.spritesheet("ada", "assets/ada.png", { frameWidth: 48, frameHeight: 48 });
-        this.load.spritesheet("evan", "assets/evan.png", { frameWidth: 48, frameHeight: 48 });
-        this.load.spritesheet("warning", "assets/warning.png", { frameWidth: 8, frameHeight: 16 });
-        this.load.spritesheet("selected-item", "assets/selected-item.png", { frameWidth: 64, frameHeight: 64 });
-        // Json
-        this.load.tilemapTiledJSON("map", "assets/tileMap.json");
-        // audio
-        this.load.audio("pleasant-creek-loop", ["assets/pleasant-creek-loop.mp3", "assets/pleasant-creek-loop.ogg"]);
-        this.load.audio("intro-theme", ["assets/intro-theme.mp3", "assets/intro-theme.ogg"]);
-
-        var width = this.cameras.main.width;
-        var height = this.cameras.main.height;
-
-        var progressBar = this.add.graphics();
-        var progressBox = this.add.graphics();
-        progressBox.fillStyle(0x222222, 0.8);
-        progressBox.fillRect((width / 2) - (320 / 2), (height / 2) - (50 / 2), 320, 50);
-
-        var loadingText = this.make.text({
-            x: width / 2,
-            y: height / 2 - 50,
-            text: "Loading...",
-            style: {
-                font: "28px monospace",
-                fill: "#ffffff"
-            }
-        });
-
-        loadingText.setOrigin(0.5, 0.5);
-
-        var percentText = this.make.text({
-            x: width / 2,
-            y: height / 2,
-            text: "0%",
-            style: {
-                font: "28px monospace",
-                fill: "#ffffff"
-            }
-        });
-        percentText.setOrigin(0.5, 0.5);
-
-        var assetText = this.make.text({
-            x: width / 2,
-            y: height / 2 + 50,
-            text: "",
-            style: {
-                font: "18px monospace",
-                fill: "#ffffff"
-            }
-        });
-        assetText.setOrigin(0.5, 0.5);
-
-        this.load.on("progress", function (value) {
-            percentText.setText(parseInt(value * 100) + "%");
-            progressBar.clear();
-            progressBar.fillStyle(0xffffff, 1);
-            progressBar.fillRect((width / 2) - (300 / 2), (height / 2) - (30 / 2), 300 * value, 30);
-        }, this);
-
-        this.load.on("fileprogress", function (file) {
-            assetText.setText("Loading asset: " + file.key);
-        }, this);
-
-        this.load.on("complete", function () {
-            var logo = this.add.image(width / 2, height / 2, "logo");
-            logo.setScale(.5);
-
-            progressBar.destroy();
-            progressBox.destroy();
-            loadingText.destroy();
-            percentText.destroy();
-            assetText.destroy();
-            this.sound.play("intro-theme", {
-                volume: .5,
-                loop: true,
-                delay: 0
-            });
-            this.time.addEvent({
-                delay: 2000,
-                callback: function () {
-                    this.scene.stop("preload");
-                    this.scene.start("titleScene");
-                }.bind(this),
-                loop: false
-            });
-        }, this);
-    }
-});
-
-var titleScene = new Phaser.Class({
-    Extends: Phaser.Scene,
-    initialize:
-        function titleScene() {
-            Phaser.Scene.call(this, "titleScene");
-        },
-    preload: function () {
-        this.width = this.cameras.main.width;
-        this.height = this.cameras.main.height;
-    },
-    create: function () {
-
-        this.titleBg = this.add.tileSprite(topBackgroundXOrigin, topBackgroundYOrigin, imageBaseWidth, imageBaseHeight, "title-background");
-        this.titleBg.setScrollFactor(0);
-
-        this.highwayBg = this.add.tileSprite(topBackgroundXOrigin, this.height - 40, imageBaseWidth, 96, "highway");
-        this.highwayBg.setScrollFactor(0);
-
-        var titleText = this.add.bitmapText(this.width / 2, (this.height / 2) - 100, "gem", "Saving the day", 40).setOrigin(0.5);
-        titleText.setTint(0xFEAE34);
-
-        var titleTextB = this.add.bitmapText(this.width / 2, (this.height / 2) - 102, "gem", "Saving the day", 40).setOrigin(0.5);
-        titleTextB.setTint(0x353D56);
-
-        this.tweens.add({
-            targets: titleText,
-            alpha: { from: .2, to: 1 },
-            props: {
-                y: { value: "+=10", duration: 2000, ease: "Sine.easeInOut" },
-            },
-            ease: "Linear",
-            duration: 2000,
-            repeat: -1,
-            yoyo: true
-        });
-
-        this.tweens.add({
-            targets: titleTextB,
-            props: {
-                y: { value: "+=10", duration: 2000, ease: "Sine.easeInOut" },
-            },
-            duration: 2000,
-            repeat: -1,
-            yoyo: true
-        });
-
-        this.anims.create({
-            key: "fliying",
-            frames: this.anims.generateFrameNumbers("memok"),
-            frameRate: 10,
-            repeat: -1
-        });
-
-        var playBtn = this.add.sprite(this.width / 2, this.height / 2, "button").setOrigin(0.5).setInteractive({ cursor: "pointer" });;
-        var playTxt = this.add.bitmapText(playBtn.x, playBtn.y - 10, "gem", "Play", 34).setOrigin(.5);
-        playTxt.setTint(0x353D56);
-
-        playBtn.on("pointerover", function () {
-            this.setTint(0xFEAE34);
-        });
-
-        playBtn.on("pointerout", function () {
-            this.clearTint();
-        });
-
-        playBtn.on("pointerup", function () {
-            this.game.sound.stopAll();
-            this.scene.start("gameScene");
-        }, this);
-
-        this.memok = this.add.sprite(this.width / 2, this.height - 80, "memok").setOrigin(0.5);
-        this.memok.play("fliying");
-
-        this.add.bitmapText(this.width / 2, this.height - 10, "gem", "A game by shimozurdo", 18).setOrigin(.5);
-
-    }, update: function () {
-        this.titleBg.tilePositionX += .5;
-        this.highwayBg.tilePositionX += .3;
-    }
-});
-
-var gameScene = new Phaser.Class({
+const gameScene = new Phaser.Class({
     Extends: Phaser.Scene,
     initialize:
         function gameScene() {
@@ -287,8 +86,8 @@ var gameScene = new Phaser.Class({
         // GROUPS AND PLAYERS
         // BACKGROUND        
         this.cameras.main.setBackgroundColor("#55648C")
-        var map = this.make.tilemap({ key: "map" });
-        var tileSet = map.addTilesetImage("tileSet", "tileSetImg");
+        let map = this.make.tilemap({ key: "map" });
+        let tileSet = map.addTilesetImage("tileSet", "tileSetImg");
         map.createDynamicLayer("staticObjects", tileSet, 0, 0);
         this.add.bitmapText(this.width - 32, 16, "gem", "items", 22).setOrigin(.5);
 
@@ -301,9 +100,9 @@ var gameScene = new Phaser.Class({
         this.textLayer.visible = false;
         this.textLayer.setDepth(10);
 
-        var surplus = 4;
+        let surplus = 4;
         this.sizeRTB = 56;
-        var rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 32 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
+        let rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 32 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
         rechargeTimeBar.setDepth(4);
         rechargeTimeBar.name = "bucketRTB";
         rechargeTimeBar.alpha = 0.7;
@@ -334,7 +133,7 @@ var gameScene = new Phaser.Class({
         rechargeTimeBar.delay = 50000;
         rechargeTimeBar.delayConst = 50000;
         this.rechargeTimeBarGrp.add(rechargeTimeBar);
-        var area = this.add.sprite(112, 294, "cross").setOrigin(.5);
+        let area = this.add.sprite(112, 294, "cross").setOrigin(.5);
         area.visible = false;
         area.name = "memok-area";
         this.areaGrp.add(area);
@@ -371,7 +170,7 @@ var gameScene = new Phaser.Class({
         this.manager2.visible = false;
         this.manager2.setDepth(10);
 
-        var item = this.add.image(this.width - 32, 64, "bucket").setOrigin(.5);
+        let item = this.add.image(this.width - 32, 64, "bucket").setOrigin(.5);
         item.name = "bucketBtn";
         this.itemsBtnGroup.add(item);
 
@@ -453,9 +252,9 @@ var gameScene = new Phaser.Class({
             }
         }, this);
 
-        var posWilmerX = 224;
-        for (var i = 0; i < 5; i++) {
-            var wilmer = this.add.sprite(posWilmerX - 16, this.height - 30, "dude");
+        let posWilmerX = 224;
+        for (let i = 0; i < 5; i++) {
+            let wilmer = this.add.sprite(posWilmerX - 16, this.height - 30, "dude");
             wilmer.setName("Wilmer" + i);
             wilmer.anims.play("idle");
             this.wilmersGrp.add(wilmer);
@@ -488,15 +287,15 @@ var gameScene = new Phaser.Class({
     },
     updateCrossesOnTheFloor: function name(update) {
         if (!update) {
-            var posX = 208;
-            var posY = this.height - 96;
-            var crossIndex = 0;
-            var timer = this.time.addEvent({
+            let posX = 208;
+            let posY = this.height - 96;
+            let crossIndex = 0;
+            let timer = this.time.addEvent({
                 delay: 100,
                 loop: false,
                 repeat: 14,
                 callback: function () {
-                    var cross = this.physics.add.sprite(posX, posY, "cross").setOrigin(.5);
+                    let cross = this.physics.add.sprite(posX, posY, "cross").setOrigin(.5);
                     cross.setDepth(1);
                     cross.setFrame(0);
                     cross.setName("cross-" + timer.getRepeatCount());
@@ -533,7 +332,7 @@ var gameScene = new Phaser.Class({
         });
     },
     typeWriterHandler: function (action) {
-        var textList = [
+        let textList = [
             {
                 action: "how to play",
                 text: [
@@ -546,10 +345,10 @@ var gameScene = new Phaser.Class({
             }
         ];
 
-        var textIndex = textList.findIndex(x => x.action === action);
+        let textIndex = textList.findIndex(x => x.action === action);
         textList[textIndex].text;
 
-        for (var index = 0; index < textList[textIndex].text.length; index++) {
+        for (let index = 0; index < textList[textIndex].text.length; index++) {
             this.infoTextMain.text += textList[textIndex].text[index] + "\n";
         }
     },
@@ -567,15 +366,15 @@ var gameScene = new Phaser.Class({
     },
     moveMemok: function (coordinates) {
         if (!coordinates) {
-            var areaMemok = this.areaGrp.getChildren().find(v => v.name === "memok-area");
+            let areaMemok = this.areaGrp.getChildren().find(v => v.name === "memok-area");
             this.physics.moveToObject(this.memok, areaMemok, 150);
         } else {
             this.physics.moveTo(this.memok, coordinates.x, coordinates.y, 150);
         }
     },
     spawnGuest: function (time) {
-        var guest = this.physics.add.sprite(368, 0, "ada").setOrigin(.5);
-        // var personChose = Phaser.Math.Between(0, 1);
+        let guest = this.physics.add.sprite(368, 0, "ada").setOrigin(.5);
+        // let personChose = Phaser.Math.Between(0, 1);
         guest.name = "name-" + parseInt((time / 1000));
         guest.isOverlaping = false;
         guest.throughACross = false;
@@ -587,7 +386,7 @@ var gameScene = new Phaser.Class({
         return guest;
     },
     placesAvailableOnTheLine: function () {
-        var crossesPosList = [];
+        let crossesPosList = [];
         this.crossesGrp.children.each(function (child) {
             crossesPosList.push({
                 name: child.name,
@@ -606,23 +405,23 @@ var gameScene = new Phaser.Class({
             return 0;
         });
 
-        var firtsElement = crossesPosList.find(v => v.isBusyPlace === false);
+        let firtsElement = crossesPosList.find(v => v.isBusyPlace === false);
 
-        var availableCrosses = crossesPosList.filter(function (cross) {
+        let availableCrosses = crossesPosList.filter(function (cross) {
             return cross.y === firtsElement.y && !cross.isBusyPlace;
         });
 
         return availableCrosses;
     },
     isThePlaceIsAvailable: function (cross) {
-        var availableCrosses = this.placesAvailableOnTheLine();
-        var place = availableCrosses.find(v => v.name === cross.name);
+        let availableCrosses = this.placesAvailableOnTheLine();
+        let place = availableCrosses.find(v => v.name === cross.name);
         return place ? true : false;
     },
     findAplaceOnTheLine: function (guest) {
-        var availableCrosses = this.placesAvailableOnTheLine();
-        var value = Phaser.Math.Between(0, availableCrosses.length - 1);
-        var cross = this.crossesGrp.getChildren().find(v => v.name === availableCrosses[value].name);
+        let availableCrosses = this.placesAvailableOnTheLine();
+        let value = Phaser.Math.Between(0, availableCrosses.length - 1);
+        let cross = this.crossesGrp.getChildren().find(v => v.name === availableCrosses[value].name);
         this.physics.moveToObject(guest, cross, 50);
     },
     overlapAPlaceInLine: function (guest, cross) {
@@ -656,7 +455,7 @@ var gameScene = new Phaser.Class({
         this.gamePlay.delaySpawnGuest -= delta;
         if (this.gamePlay.delaySpawnGuest < 0) {
             this.gamePlay.delaySpawnGuest = this.gamePlay.delaySpawnGuestConst;
-            var guest = this.spawnGuest(time);
+            let guest = this.spawnGuest(time);
             this.warningIcon.setFrame(0);
             this.warningIcon.play("blinking-warning");
             this.findAplaceOnTheLine(guest);
@@ -696,41 +495,4 @@ var gameScene = new Phaser.Class({
     }
 });
 
-var config = {
-    title: "Saving the day",
-    type: Phaser.AUTO,
-    pixelArt: true,
-    physics: {
-        default: 'arcade',
-        arcade: { debug: false }
-    },
-    scale: {
-        mode: Phaser.Scale.FIT,
-        parent: "game",
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: 800,
-        height: 450
-    },
-    scene: [preloadScene, titleScene, gameScene],
-    dom: {
-        createContainer: true
-    },
-};
-
-var game = new Phaser.Game(config);
-
-// Config for paralax backgrounds
-
-// Get the window sizes
-var windowWidth = window.innerWidth;
-var windowHeight = window.innerHeight;
-
-// Find the center of the top space
-var topBackgroundXOrigin = windowWidth / 2;
-var topBackgroundYOrigin = (windowHeight / 5) * 1.5;
-var topBackgroundHeight = (windowHeight / 5) * 3;
-
-// Base width and height of the images
-var imageBaseWidth = 1280;
-var imageBaseHeight = 720;
-var heightRatio = topBackgroundHeight / imageBaseHeight;
+export default gameScene;
