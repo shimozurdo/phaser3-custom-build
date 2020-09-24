@@ -32,6 +32,7 @@ var preloadScene = new Phaser.Class({
         this.load.spritesheet("ada", "assets/ada.png", { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet("evan", "assets/evan.png", { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet("warning", "assets/warning.png", { frameWidth: 8, frameHeight: 16 });
+        this.load.spritesheet("selected-item", "assets/selected-item.png", { frameWidth: 64, frameHeight: 64 });
         // Json
         this.load.tilemapTiledJSON("map", "assets/tileMap.json");
         // audio
@@ -207,11 +208,17 @@ var gameScene = new Phaser.Class({
     preload: function () {
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
-        this.delayGeneral = 200;
+        this.gamePlay = {
+            delayGeneral: 200,
+            level: 1,
+            score: 0,
+            free: 0,
+            delaySpawnGuest: 400,
+            delaySpawnGuestConst: 4000
+        }
         this.gameOver = false;
         this.gameStart = false;
-        this.delaySpawnPeople;
-        this.delaySpawnPeopleMS;
+        this.mouse = this.input.mousePointer;
     },
     create: function () {
         // MUSIC
@@ -260,16 +267,23 @@ var gameScene = new Phaser.Class({
         this.anims.create({
             key: "blinking-warning",
             frames: this.anims.generateFrameNumbers("warning"),
-            frameRate: 2,
-            loop: false
+            frameRate: 4
+        });
+
+        this.anims.create({
+            key: "blinking-selected-item",
+            frames: this.anims.generateFrameNumbers("selected-item"),
+            frameRate: 4,
+            repeat: -1
         });
         // ANIMATIONS
         // GROUPS AND PLAYERS
-        this.progressBarGrp = this.add.group();
+        this.rechargeTimeBarGrp = this.add.group();
         this.wilmersGrp = this.add.group();
-        this.peopleGrp = this.add.group();
+        this.guestsGrp = this.add.group();
         this.crossesGrp = this.add.group();
         this.itemsBtnGroup = this.add.group();
+        this.areaGrp = this.physics.add.staticGroup();
         // GROUPS AND PLAYERS
         // BACKGROUND        
         this.cameras.main.setBackgroundColor("#55648C")
@@ -288,30 +302,58 @@ var gameScene = new Phaser.Class({
         this.textLayer.setDepth(10);
 
         var surplus = 4;
-        var progressBar = this.add.rectangle(this.width - 64 + surplus, 32 + surplus, 56, 56, 0x000).setOrigin(0);
-        progressBar.setDepth(4);
-        progressBar.alpha = 0.7;
-        progressBar.setData({ rechargeTime: 5000 });
-        this.progressBarGrp.add(progressBar);
+        this.sizeRTB = 56;
+        var rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 32 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
+        rechargeTimeBar.setDepth(4);
+        rechargeTimeBar.name = "bucketRTB";
+        rechargeTimeBar.alpha = 0.7;
+        rechargeTimeBar.delay = 5000;
+        rechargeTimeBar.delayConst = 5000;
+        this.rechargeTimeBarGrp.add(rechargeTimeBar);
 
-        progressBar = this.add.rectangle(this.width - 64 + surplus, 96 + surplus, 56, 56, 0x000).setOrigin(0);
-        progressBar.setDepth(4);
-        progressBar.alpha = 0.7;
-        progressBar.setData({ rechargeTime: 10000 });
-        this.progressBarGrp.add(progressBar);
+        rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 96 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
+        rechargeTimeBar.setDepth(4);
+        rechargeTimeBar.name = "maskRTB";
+        rechargeTimeBar.alpha = 0.7;
+        rechargeTimeBar.delay = 20000;
+        rechargeTimeBar.delayConst = 20000;
+        this.rechargeTimeBarGrp.add(rechargeTimeBar);
 
-        progressBar = this.add.rectangle(this.width - 64 + surplus, 160 + surplus, 56, 56, 0x000).setOrigin(0);
-        progressBar.setDepth(4);
-        progressBar.alpha = 0.7;
-        progressBar.setData({ rechargeTime: 15000 });
-        this.progressBarGrp.add(progressBar);
+        rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 160 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
+        rechargeTimeBar.setDepth(4);
+        rechargeTimeBar.name = "vaccineRTB";
+        rechargeTimeBar.alpha = 0.7;
+        rechargeTimeBar.delay = 30000;
+        rechargeTimeBar.delayConst = 30000;
+        this.rechargeTimeBarGrp.add(rechargeTimeBar);
 
-        progressBar = this.add.rectangle(this.width - 64 + surplus, 224 + surplus, 56, 56, 0x000).setOrigin(0);
-        progressBar.setDepth(4);
-        progressBar.alpha = 0.7;
-        progressBar.setData({ rechargeTime: 20000 });
-        this.progressBarGrp.add(progressBar);
-
+        rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 224 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
+        rechargeTimeBar.setDepth(4);
+        rechargeTimeBar.name = "abmulanceRTB";
+        rechargeTimeBar.alpha = 0.7;
+        rechargeTimeBar.delay = 50000;
+        rechargeTimeBar.delayConst = 50000;
+        this.rechargeTimeBarGrp.add(rechargeTimeBar);
+        var area = this.add.sprite(112, 294, "cross").setOrigin(.5);
+        area.visible = false;
+        area.name = "memok-area";
+        this.areaGrp.add(area);
+        area = this.add.sprite(112, 362, "cross").setOrigin(.5);
+        area.visible = false;
+        area.name = "exit-1";
+        this.areaGrp.add(area);
+        area = this.add.sprite(656, 362, "cross").setOrigin(.5);
+        area.visible = false;
+        area.name = "exit-2";
+        this.areaGrp.add(area);
+        this.areaGrp.visible = false;
+        this.selectedItem = this.add.sprite(-100, -100, "selected-item").setOrigin(.5);
+        this.selectedItem.setDepth(4);
+        this.selectedItem.play("blinking-selected-item");
+        this.selectedCross = this.add.sprite(-100, -100, "selected-item").setOrigin(.5);
+        this.selectedCross.setDepth(1);
+        this.selectedCross.play("blinking-selected-item");
+        this.selectedCross.setScale(.7);
         // BACKGROUND
         // GAME OBJECTS
         this.memok = this.physics.add.sprite(this.width / 2, this.height / 2, "memok").setOrigin(0.5);
@@ -366,7 +408,7 @@ var gameScene = new Phaser.Class({
 
         this.input.setHitArea(this.itemsBtnGroup.getChildren()).on('pointerover', function (pointer, children) {
             children.forEach(function (child) {
-                child.setTint(0xfeae34);
+                // child.setTint(0xfeae34);
             });
         });
 
@@ -384,19 +426,30 @@ var gameScene = new Phaser.Class({
                 if (!this.gameStart) {
                     this.updateCrossesOnTheFloor(false);
                     this.time.addEvent({
-                        delay: this.delayGeneral,
+                        delay: this.gamePlay.delayGeneral,
                         callback: function () {
                             this.gameStart = true;
-                            this.spawnPeopleConfig(
-                                {
-                                    delaySpawnPeople: 4000,
-                                    delaySpawnPeopleMS: 4000
-                                }
-                            );
+                            this.moveMemok();
                         }.bind(this),
                         loop: false
                     });
                 }
+            }
+            else if (child.name === "bucketBtn") {
+                this.selectedItem.setPosition(child.x, child.y);
+                this.selectedItem.name = "bucketBtn";
+            }
+            else if (child.name === "maskBtn") {
+                this.selectedItem.setPosition(child.x, child.y);
+                this.selectedItem.name = "maskBtn";
+            }
+            else if (child.name === "vaccineBtn") {
+                this.selectedItem.setPosition(child.x, child.y);
+                this.selectedItem.name = "vaccineBtn";
+            }
+            else if (child.name === "ambulanceBtn") {
+                this.selectedItem.setPosition(child.x, child.y);
+                this.selectedItem.name = "ambulanceBtn";
             }
         }, this);
 
@@ -416,13 +469,16 @@ var gameScene = new Phaser.Class({
         this.infoTextMain = this.add.bitmapText(this.manager2.x + 32, this.manager2.y - 40, "gem", "", 16);
         this.infoTextMain.visible = false;
         this.infoTextMain.setDepth(10);
+
         // GAME OBJECTS
 
         //  Collisions
-        this.physics.add.overlap(this.peopleGrp, this.crossesGrp, this.overlapAPlaceInLine, null, this);
+        this.physics.add.collider(this.guestsGrp, this.guestsGrp, this.collideGuests, null, this);
+        this.physics.add.overlap(this.guestsGrp, this.crossesGrp, this.overlapAPlaceInLine, null, this);
+        this.physics.add.overlap(this.memok, this.areaGrp, this.overlapAreas, null, this);
 
         this.time.addEvent({
-            delay: this.delayGeneral,
+            delay: this.gamePlay.delayGeneral,
             callback: function () {
                 this.showInfo(true);
                 this.typeWriterHandler("how to play");
@@ -444,6 +500,7 @@ var gameScene = new Phaser.Class({
                     cross.setDepth(1);
                     cross.setFrame(0);
                     cross.setName("cross-" + timer.getRepeatCount());
+                    cross.footsteps = 0;
                     cross.isBusyPlace = false;
                     this.crossesGrp.add(cross);
                     posX += 96;
@@ -496,18 +553,38 @@ var gameScene = new Phaser.Class({
             this.infoTextMain.text += textList[textIndex].text[index] + "\n";
         }
     },
-    spawnPeopleConfig: function (config) {
-        this.delaySpawnPeopleMS = config.delaySpawnPeopleMS;
-        this.delaySpawnPeople = config.delaySpawnPeople;
+    collideGuests: function (guest1, guest2) {
+        guest1.setVelocity(0);
+        guest2.setVelocity(0);
     },
-    spawnPeople: function (time) {
-        var person = this.physics.add.sprite(368, 0, "ada").setOrigin(.5);
+    overlapAreas: function (memok, area) {
+        if (memok.x > area.x - 8 &&
+            memok.x < area.x + 8 &&
+            memok.y > area.y - 8 &&
+            memok.y < area.y + 8 &&
+            area.name === "memok-area")
+            memok.setVelocity(0);
+    },
+    moveMemok: function (coordinates) {
+        if (!coordinates) {
+            var areaMemok = this.areaGrp.getChildren().find(v => v.name === "memok-area");
+            this.physics.moveToObject(this.memok, areaMemok, 150);
+        } else {
+            this.physics.moveTo(this.memok, coordinates.x, coordinates.y, 150);
+        }
+    },
+    spawnGuest: function (time) {
+        var guest = this.physics.add.sprite(368, 0, "ada").setOrigin(.5);
         // var personChose = Phaser.Math.Between(0, 1);
-        person.name = "name-" + parseInt((time / 1000));
-        person.setDepth(2);
-        person.play("walking");
-        this.peopleGrp.add(person);
-        return person;
+        guest.name = "name-" + parseInt((time / 1000));
+        guest.isOverlaping = false;
+        guest.throughACross = false;
+        guest.isOnTheCross = false;
+        guest.setDepth(2);
+        guest.play("walking");
+        guest.body.setSize(24, 32);
+        this.guestsGrp.add(guest);
+        return guest;
     },
     placesAvailableOnTheLine: function () {
         var crossesPosList = [];
@@ -542,20 +619,32 @@ var gameScene = new Phaser.Class({
         var place = availableCrosses.find(v => v.name === cross.name);
         return place ? true : false;
     },
-    findAplaceOnTheLine: function (person) {
+    findAplaceOnTheLine: function (guest) {
         var availableCrosses = this.placesAvailableOnTheLine();
         var value = Phaser.Math.Between(0, availableCrosses.length - 1);
         var cross = this.crossesGrp.getChildren().find(v => v.name === availableCrosses[value].name);
-        this.physics.moveToObject(person, cross, 100);
+        this.physics.moveToObject(guest, cross, 50);
     },
-    overlapAPlaceInLine: function (person, cross) {
-        if (person.x > cross.x - 8 &&
-            person.x < cross.x + 8 &&
-            person.y > cross.y - 8 &&
-            person.y < cross.y + 8 &&
+    overlapAPlaceInLine: function (guest, cross) {
+        if (guest.isOnTheCross)
+            return;
+
+        guest.isOverlaping = true;
+
+        if (!guest.throughACross) {
+            guest.throughACross = true;
+            cross.footsteps += 1;
+            if (cross.footsteps <= 4)
+                cross.setFrame(cross.footsteps);
+        }
+        if (guest.x > cross.x - 8 &&
+            guest.x < cross.x + 8 &&
+            guest.y > cross.y - 8 &&
+            guest.y < cross.y + 8 &&
             !cross.isBusyPlace) {
             if (this.isThePlaceIsAvailable(cross)) {
-                person.setVelocity(0);
+                guest.setVelocity(0);
+                guest.isOnTheCross = true;
                 cross.isBusyPlace = true;
             }
         }
@@ -564,13 +653,46 @@ var gameScene = new Phaser.Class({
         if (this.gameOver || !this.gameStart)
             return;
 
-        this.delaySpawnPeople -= delta;
-        if (this.delaySpawnPeople < 0) {
-            this.delaySpawnPeople = 40000;
-            var person = this.spawnPeople(time);
-            this.findAplaceOnTheLine(person);
+        this.gamePlay.delaySpawnGuest -= delta;
+        if (this.gamePlay.delaySpawnGuest < 0) {
+            this.gamePlay.delaySpawnGuest = this.gamePlay.delaySpawnGuestConst;
+            var guest = this.spawnGuest(time);
+            this.warningIcon.setFrame(0);
+            this.warningIcon.play("blinking-warning");
+            this.findAplaceOnTheLine(guest);
         }
 
+        this.rechargeTimeBarGrp.children.each((rechargeTimeBar) => {
+            rechargeTimeBar.delay -= delta;
+            if (rechargeTimeBar.delay <= 0)
+                rechargeTimeBar.width = 0;
+            else {
+                rechargeTimeBar.width = this.sizeRTB * rechargeTimeBar.delay / rechargeTimeBar.delayConst;
+            }
+        });
+
+        // pinned 
+        this.warningIcon.setPosition(this.memok.x, this.memok.y - 32);
+
+        if (this.crossesGrp) {
+            this.input.setHitArea(this.crossesGrp.getChildren()).on('pointerover', function (pointer, children) {
+                children.forEach(function (cross) {
+                    if (cross.name.includes("cross"))
+                        this.selectedCross.setPosition(cross.x, cross.y);
+                }, this);
+            }, this);
+
+            this.input.setHitArea(this.crossesGrp.getChildren()).on('pointerout', function (pointer, children) {
+                this.selectedCross.setPosition(-100, -100);
+            }, this);
+        }
+
+        this.guestsGrp.children.each(function (guest) {
+            if (!guest.isOverlaping)
+                guest.throughACross = false;
+
+            guest.isOverlaping = false;
+        });
     }
 });
 
