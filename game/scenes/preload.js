@@ -39,15 +39,15 @@ const preloadScene = new Phaser.Class({
         this.load.audio("pleasant-creek-loop", ["assets/pleasant-creek-loop.mp3", "assets/pleasant-creek-loop.ogg"]);
         this.load.audio("intro-theme", ["assets/intro-theme.mp3", "assets/intro-theme.ogg"]);
 
-        let width = this.cameras.main.width;
-        let height = this.cameras.main.height;
+        const width = this.cameras.main.width;
+        const height = this.cameras.main.height;
 
-        let progressBar = this.add.graphics();
-        let progressBox = this.add.graphics();
+        const progressBar = this.add.graphics();
+        const progressBox = this.add.graphics();
         progressBox.fillStyle(0x222222, 0.8);
         progressBox.fillRect((width / 2) - (320 / 2), (height / 2) - (50 / 2), 320, 50);
 
-        let loadingText = this.make.text({
+        const loadingText = this.make.text({
             x: width / 2,
             y: height / 2 - 50,
             text: "Loading...",
@@ -59,7 +59,7 @@ const preloadScene = new Phaser.Class({
 
         loadingText.setOrigin(0.5, 0.5);
 
-        let percentText = this.make.text({
+        const percentText = this.make.text({
             x: width / 2,
             y: height / 2,
             text: "0%",
@@ -70,7 +70,7 @@ const preloadScene = new Phaser.Class({
         });
         percentText.setOrigin(0.5, 0.5);
 
-        let assetText = this.make.text({
+        const assetText = this.make.text({
             x: width / 2,
             y: height / 2 + 50,
             text: "",
@@ -101,16 +101,16 @@ const preloadScene = new Phaser.Class({
             loadingText.destroy();
             percentText.destroy();
             assetText.destroy();
-            this.sound.play("intro-theme", {
-                volume: .5,
-                loop: true,
-                delay: 0
-            });
+            // this.sound.play("intro-theme", {
+            //     volume: .5,
+            //     loop: true,
+            //     delay: 0
+            // });
             this.time.addEvent({
                 delay: 2000,
                 callback: function () {
                     this.scene.stop("preload");
-                    this.scene.start("titleScene");
+                    this.scene.start("gameScene");
                 }.bind(this),
                 loop: false
             });
