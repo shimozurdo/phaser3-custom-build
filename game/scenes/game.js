@@ -8,29 +8,81 @@ const gameScene = new Phaser.Class({
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
         this.gamePlay = {
-            delayGeneral: 200,
+            delayGeneral: 500,
             level: 1,
             score: 0,
             free: 0,
             delaySpawnGuest: 400,
-            delaySpawnGuestConst: 4000
+            delaySpawnGuestConst: 4000,
+            stepTutorialModal: 1,
+            gameOver: false,
+            gameStart: false
         }
-        this.gameOver = false;
-        this.gameStart = false;
         this.mouse = this.input.mousePointer;
     },
     create: function () {
         // // MUSIC
         // this.sound.play("pleasant-creek-loop", {
         //     volume: .5,
-        //     loop: true,       
+        //     loop: true,
         // });
         // // MUSIC
 
         // ANIMATIONS
+        //It will improve
+
         this.anims.create({
-            key: "walking",
+            key: "walking-ada",
             frames: this.anims.generateFrameNumbers("ada"),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "walking-ada-mask",
+            frames: this.anims.generateFrameNumbers("ada-mask"),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "walking-ada-sick",
+            frames: this.anims.generateFrameNumbers("ada-sick"),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "walking-ada-sick-mask",
+            frames: this.anims.generateFrameNumbers("ada-sick-mask"),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "walking-evan",
+            frames: this.anims.generateFrameNumbers("evan"),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "walking-evan-mask",
+            frames: this.anims.generateFrameNumbers("evan-mask"),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "walking-evan-sick",
+            frames: this.anims.generateFrameNumbers("evan-sick"),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "walking-evan-sick-mask",
+            frames: this.anims.generateFrameNumbers("evan-sick-mask"),
             frameRate: 4,
             repeat: -1
         });
@@ -66,12 +118,19 @@ const gameScene = new Phaser.Class({
         this.anims.create({
             key: "blinking-warning",
             frames: this.anims.generateFrameNumbers("warning"),
-            frameRate: 4
+            frameRate: 8
         });
 
         this.anims.create({
             key: "blinking-selected-item",
             frames: this.anims.generateFrameNumbers("selected-item"),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: "blinking-arrow-down",
+            frames: this.anims.generateFrameNumbers("arrow-down"),
             frameRate: 4,
             repeat: -1
         });
@@ -90,18 +149,18 @@ const gameScene = new Phaser.Class({
         this.cameras.main.setBackgroundColor("#55648C")
         const map = this.make.tilemap({ key: "map" });
         const tileSet = map.addTilesetImage("tileSet", "tileSetImg");
-        const a = map.createDynamicLayer("staticObjects", tileSet, 0, 0);
+        map.createDynamicLayer("staticObjects", tileSet, 0, 0);
         this.add.bitmapText(this.width - 32, 16, "gem", "items", 22).setOrigin(.5);
         // map.setCollisionBetween(10, 15, true, null, 1);
 
         this.rectBackground = this.add.rectangle(this.width / 2, this.height / 2, this.width, this.height, 0x000);
-        this.rectBackground.alpha = 0.7;
+        this.rectBackground.alpha = 0.5;
         this.rectBackground.visible = false;
-        this.rectBackground.setDepth(10);
+        this.rectBackground.setDepth(9);
 
         this.textLayer = map.createDynamicLayer("text", tileSet, 0, 0);
         this.textLayer.visible = false;
-        this.textLayer.setDepth(10);
+        this.textLayer.setDepth(9);
 
         const surplus = 4;
         this.sizeRTB = 56;
@@ -123,19 +182,27 @@ const gameScene = new Phaser.Class({
 
         rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 160 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
         rechargeTimeBar.setDepth(4);
-        rechargeTimeBar.name = "vaccineRTB";
+        rechargeTimeBar.name = "handRTB";
         rechargeTimeBar.alpha = 0.7;
         rechargeTimeBar.delay = 30000;
         rechargeTimeBar.delayConst = 30000;
         this.rechargeTimeBarGrp.add(rechargeTimeBar);
 
-        rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 224 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
-        rechargeTimeBar.setDepth(4);
-        rechargeTimeBar.name = "abmulanceRTB";
-        rechargeTimeBar.alpha = 0.7;
-        rechargeTimeBar.delay = 50000;
-        rechargeTimeBar.delayConst = 50000;
-        this.rechargeTimeBarGrp.add(rechargeTimeBar);
+        // rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 160 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
+        // rechargeTimeBar.setDepth(4);
+        // rechargeTimeBar.name = "vaccineRTB";
+        // rechargeTimeBar.alpha = 0.7;
+        // rechargeTimeBar.delay = 30000;
+        // rechargeTimeBar.delayConst = 30000;
+        // this.rechargeTimeBarGrp.add(rechargeTimeBar);
+
+        // rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, 224 + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
+        // rechargeTimeBar.setDepth(4);
+        // rechargeTimeBar.name = "abmulanceRTB";
+        // rechargeTimeBar.alpha = 0.7;
+        // rechargeTimeBar.delay = 50000;
+        // rechargeTimeBar.delayConst = 50000;
+        // this.rechargeTimeBarGrp.add(rechargeTimeBar);
 
         let area = this.add.sprite(112, 294, "cross").setOrigin(.5);
         area.visible = false;
@@ -172,7 +239,7 @@ const gameScene = new Phaser.Class({
         this.memok.setDepth(9);
 
         this.warningIcon = this.add.sprite(this.memok.x, this.memok.y - 32, "warning").setOrigin(0.5);
-        this.warningIcon.play("blinking-warning");
+        this.warningIcon.setFrame(4);
         this.warningIcon.setDepth(9);
 
         this.manager = this.add.image(this.width - 32, this.height - 32, "manager").setOrigin(0.5);
@@ -190,13 +257,17 @@ const gameScene = new Phaser.Class({
         item.name = "maskBtn";
         this.itemsBtnGroup.add(item);
 
-        item = this.add.image(this.width - 32, 192, "vaccine").setOrigin(.5);
-        item.name = "vaccineBtn";
+        item = this.add.image(this.width - 32, 192, "hand").setOrigin(.5);
+        item.name = "handBtn";
         this.itemsBtnGroup.add(item);
 
-        item = this.add.image(this.width - 32, 256, "ambulance").setOrigin(.5);
-        item.name = "ambulanceBtn";
-        this.itemsBtnGroup.add(item);
+        // item = this.add.image(this.width - 32, 192, "vaccine").setOrigin(.5);
+        // item.name = "vaccineBtn";
+        // this.itemsBtnGroup.add(item);
+
+        // item = this.add.image(this.width - 32, 256, "ambulance").setOrigin(.5);
+        // item.name = "ambulanceBtn";
+        // this.itemsBtnGroup.add(item);
 
         item = this.add.sprite(this.manager.x, this.manager.y - 48, "help").setOrigin(0.5);
         item.name = "helpAlertBtn";
@@ -205,14 +276,14 @@ const gameScene = new Phaser.Class({
         this.itemsBtnGroup.add(item);
 
         item = this.add.sprite(624, this.manager2.y + 32, "more-text").setOrigin(0.5);
-        item.name = "moreInfoTextBtn";
+        item.name = "showMoreInfoBtn";
         item.play("blinking");
         item.visible = false;
         item.setDepth(10);
         this.itemsBtnGroup.add(item);
 
         item = this.add.image(624, this.manager2.y - 32, "close").setOrigin(0.5);
-        item.name = "closeBtn";
+        item.name = "closeModalBtn";
         item.visible = false;
         item.setDepth(10);
         this.itemsBtnGroup.add(item);
@@ -226,36 +297,53 @@ const gameScene = new Phaser.Class({
         this.input.setHitArea(this.itemsBtnGroup.getChildren()).on('gameobjectdown', function (pointer, child) {
             if (child.name === "helpAlertBtn")
                 showRules.call(this, true);
-            else if (child.name === "closeBtn") {
+            else if (child.name === "closeModalBtn") {
+                this.warningIcon.play("blinking-warning");
+                this.gamePlay.stepTutorialModal = 1;
                 showRules.call(this, false);
-                if (!this.gameStart) {
-                    updateCrossesOnTheFloor.call(this, false);
+                if (!this.gamePlay.gameStart) {
                     this.time.addEvent({
                         delay: this.gamePlay.delayGeneral,
                         callback: function () {
-                            this.gameStart = true;
+                            this.gamePlay.gameStart = true;
                             moveMemok.call(this);
                         }.bind(this),
                         loop: false
                     });
                 }
             }
+            else if (child.name === "showMoreInfoBtn") {
+                this.warningIcon.play("blinking-warning");
+                showRules.call(this, true);
+                this.gamePlay.stepTutorialModal++;
+                uptateGameProgress.call(this);
+                typeWriterHandler.call(this, { name: "rules", desc: "desc" + this.gamePlay.stepTutorialModal });
+            }
             else if (child.name === "bucketBtn") {
                 this.selectedItem.setPosition(child.x, child.y);
                 this.selectedItem.name = "bucketBtn";
+                if (this.gamePlay.stepTutorialModal === 2)
+                    this.selectedItem.setDepth(11);
             }
             else if (child.name === "maskBtn") {
                 this.selectedItem.setPosition(child.x, child.y);
                 this.selectedItem.name = "maskBtn";
+                if (this.gamePlay.stepTutorialModal === 3)
+                    this.selectedItem.setDepth(11);
             }
-            else if (child.name === "vaccineBtn") {
+            else if (child.name === "handBtn") {
                 this.selectedItem.setPosition(child.x, child.y);
-                this.selectedItem.name = "vaccineBtn";
+                this.selectedItem.name = "handBtn";
             }
-            else if (child.name === "ambulanceBtn") {
-                this.selectedItem.setPosition(child.x, child.y);
-                this.selectedItem.name = "ambulanceBtn";
-            }
+
+            // else if (child.name === "vaccineBtn") {
+            //     this.selectedItem.setPosition(child.x, child.y);
+            //     this.selectedItem.name = "vaccineBtn";
+            // }
+            // else if (child.name === "ambulanceBtn") {
+            //     this.selectedItem.setPosition(child.x, child.y);
+            //     this.selectedItem.name = "ambulanceBtn";
+            // }
         }, this);
 
         let posWilmerX = 224;
@@ -287,19 +375,70 @@ const gameScene = new Phaser.Class({
             delay: this.gamePlay.delayGeneral,
             callback: function () {
                 showRules.call(this, true);
-                typeWriterHandler.call(this, "how to play");
+                typeWriterHandler.call(this, { name: "rules", desc: "desc" + this.gamePlay.stepTutorialModal });
+
+                this.warningIcon.setFrame(0);
             }.bind(this),
             loop: false
         });
     },
     update: function (time, delta) {
-        if (this.gameOver || !this.gameStart)
+        if (this.crossesGrp) {
+            this.input.setHitArea(this.crossesGrp.getChildren()).on('pointerover', function (pointer, children) {
+                if (this.selectedItem.name === "bucketBtn")
+                    children.forEach(function (cross) {
+                        if (cross.name.includes("cross") || cross.name.includes("cross-tutorial"))
+                            this.selectedCross.setPosition(cross.x, cross.y);
+                        if (cross.name.includes("tutorial"))
+                            this.selectedCross.setDepth(11);
+                    }, this);
+            }, this);
+
+            this.input.setHitArea(this.crossesGrp.getChildren()).on('pointerout', function (pointer, children) {
+                this.selectedCross.setPosition(-100, -100);
+                this.selectedCross.setDepth(1);
+            }, this);
+
+            this.input.setHitArea(this.crossesGrp.getChildren()).on('gameobjectdown', function (pointer, child) {
+                if (this.selectedItem.name === "bucketBtn")
+                    child.setFrame(0);
+            }, this);
+        }
+
+        if (this.guestsGrp) {
+            this.input.setHitArea(this.guestsGrp.getChildren()).on('pointerover', function (pointer, children) {
+                if (this.selectedItem.name === "maskBtn" || this.selectedItem.name === "handBtn")
+                    children.forEach(function (guest) {
+                        if (guest.name.includes("guest") || guest.name.includes("guest-tutorial")) {
+                            guest.setTintFill(0xffffff70);
+                        }
+                    }, this);
+            }, this);
+
+            // this.input.setHitArea(this.crossesGrp.getChildren()).on('pointerout', function (pointer, child) {
+            //     child.clearTint();;
+            // }, this);
+
+            this.input.setHitArea(this.guestsGrp.getChildren()).on('gameobjectdown', function (pointer, child) {
+                let a;
+                if (this.selectedItem.name === "maskBtn")
+                    if (child.name.includes("guest")) {
+                        const currentAnimation = child.anims.getCurrentKey();
+                        const animationMask = !currentAnimation.includes("mask") ? currentAnimation + "-mask" : currentAnimation;
+                        child.play(animationMask);
+                    }
+            }, this);
+
+        }
+
+        if (this.gamePlay.gameOver || !this.gamePlay.gameStart)
             return;
 
         this.gamePlay.delaySpawnGuest -= delta;
         if (this.gamePlay.delaySpawnGuest < 0) {
             this.gamePlay.delaySpawnGuest = this.gamePlay.delaySpawnGuestConst;
             const guest = spawnGuest.call(this, time);
+            guest.name = "guest-" + parseInt((time / 1000));
             this.warningIcon.setFrame(0);
             this.warningIcon.play("blinking-warning");
             findAplaceOnTheLine.call(this, guest);
@@ -316,20 +455,7 @@ const gameScene = new Phaser.Class({
 
         // pinned sprites
         this.warningIcon.setPosition(this.memok.x, this.memok.y - 32);
-        // pinned sprites
-
-        if (this.crossesGrp) {
-            this.input.setHitArea(this.crossesGrp.getChildren()).on('pointerover', function (pointer, children) {
-                children.forEach(function (cross) {
-                    if (cross.name.includes("cross"))
-                        this.selectedCross.setPosition(cross.x, cross.y);
-                }, this);
-            }, this);
-
-            this.input.setHitArea(this.crossesGrp.getChildren()).on('pointerout', function (pointer, children) {
-                this.selectedCross.setPosition(-100, -100);
-            }, this);
-        }
+        // pinned sprites        
 
         this.guestsGrp.children.each(function (guest) {
             if (!guest.isOverlaping)
@@ -339,6 +465,47 @@ const gameScene = new Phaser.Class({
         });
     }
 });
+
+// UPDATE GAME PLAY
+function uptateGameProgress() {
+    //tutorial
+    if (!this.gameStart) {
+        const items = this.itemsBtnGroup.getChildren().filter(v => v.name === "showMoreInfoBtn" || v.name === "closeModalBtn");
+        items[0].setDepth(10);
+        items[1].setDepth(10);
+        let itemBucketBtn = this.itemsBtnGroup.getChildren().find(v => v.name === "bucketBtn");
+        let itemMaskBtn = this.itemsBtnGroup.getChildren().find(v => v.name === "maskBtn");
+        let itemHandBtn = this.itemsBtnGroup.getChildren().find(v => v.name === "handBtn");
+        if (this.gamePlay.stepTutorialModal === 2) {
+            itemBucketBtn.setDepth(11);
+            updateCrossesOnTheFloor.call(this, "tutorial");
+        } else if (this.gamePlay.stepTutorialModal === 3) {
+            // updateCrossesOnTheFloor.call(this);
+            // itemBucketBtn.setDepth(1);
+            // const item = this.crossesGrp.getChildren().find(v => v.name === "cross-tutorial");
+            // item.destroy();            
+            this.arrowRight.setPosition(this.arrowRight.x, this.arrowRight.y + 64);
+            this.selectedCross.setPosition(-100, -100);
+            itemMaskBtn.setDepth(11);
+            this.selectedItem.setPosition(-100, -100);
+            this.selectedItem.name = "";
+
+            const guest = this.physics.add.sprite(350, 300, "ada").setOrigin(.5);
+            guest.name = "guest-tutorial";
+            guest.setDepth(11);
+            guest.play("walking-ada");
+            guest.body.setSize(24, 32);
+            this.guestsGrp.add(guest);
+            this.arrowDown.setPosition(guest.x, guest.y - 48);
+        } else if (this.gamePlay.stepTutorialModal === 4) {
+            this.selectedItem.setPosition(-100, -100);
+            // itemMaskBtn.setDepth(1);
+            itemHandBtn.setDepth(11);
+            this.arrowRight.setPosition(this.arrowRight.x, this.arrowRight.y + 64);
+        }
+    }
+}
+// UPDATE GAME PLAY
 
 // CAll BACK COLLISION
 function collideGuests(guest1, guest2) {
@@ -391,78 +558,70 @@ function showRules(showMainText) {
     this.manager2.visible = showMainText;
 
     this.itemsBtnGroup.children.each(function (child) {
-        if (child.name === "closeBtn" || child.name === "moreInfoTextBtn") {
+        if (child.name === "closeModalBtn" || child.name === "showMoreInfoBtn") {
             child.visible = showMainText;
+            child.setDepth(10);
         }
-        else if (child.name === "helpAlertBtn")
+        else if (child.name === "helpAlertBtn") {
             child.visible = !showMainText;
+            child.setDepth(1);
+        }
     });
 }
 
-function typeWriterHandler(action) {
-    const textList = [
+function typeWriterHandler(infoObj) {
+    const textInfoList = [
         {
-            action: "how to play",
-            desc: [
-                "Lorem ipsum dolor sit amet, consectetur adipisci",
-                "aliqua. Ut enim ad minim veniam, quis nostrud ext",
-                "Duis aute irure dolor in reprehenderit in vo repr",
-                "in reprehenderit in voluptate velit esse cillum d",
-                "sunt in culpa qui officia deserunt mollit anim id"
+            name: "rules",
+            "desc1": [
+                "Hello Memok, welcome to your first day of work,",
+                "I am the manager of the Evergreen hotel, below",
+                "I will explain how you are going to help our guests.\n",
+                "On the right side there are items that you can use."
+            ],
+            "desc2": [
+                "The bucket will serve you to prevent that guests",
+                "bunch up highlighting the X marks on the floor, just",
+                "select the bucket and paint the X with the mouse."
+            ],
+            "desc3": [
+                "The masks will serve to reduce infections, so you",
+                "can also put them on the guests. Select the mask",
+                "and put on the guest with the mouse."
+            ],
+            "desc4": [
+                "You could also kindly instruct guests to stand on",
+                "an x ​​mark selecting the hand and then a guest"
             ]
         }
     ];
 
-    const textItem = textList.find(x => x.action === action);
-    textItem.desc;
+    const textInfoItem = textInfoList.find(x => x.name === infoObj.name);
+    this.infoTextMain.text = "";
+    let index = 0
+    this.time.addEvent({
+        delay: 250,
+        loop: false,
+        repeat: textInfoItem[infoObj.desc].length - 1,
+        callback: function () {
+            this.infoTextMain.text += textInfoItem[infoObj.desc][index] + "\n";
+            index++;
+        }.bind(this),
+    });
 
-    for (let index = 0; index < textItem.desc.length; index++) {
-        this.infoTextMain.text += textItem.desc[index] + "\n";
-    }
 }
 // RULES
 
 // GUEST ACTION
-function updateCrossesOnTheFloor(update) {
-    if (!update) {
-        let posX = 208;
-        let posY = this.height - 96;
-        let crossIndex = 0;
-        const timer = this.time.addEvent({
-            delay: 100,
-            loop: false,
-            repeat: 14,
-            callback: function () {
-                const cross = this.physics.add.sprite(posX, posY, "cross").setOrigin(.5);
-                cross.setDepth(1);
-                cross.setFrame(0);
-                cross.setName("cross-" + timer.getRepeatCount());
-                cross.footsteps = 0;
-                cross.isBusyPlace = false;
-                this.crossesGrp.add(cross);
-                posX += 96;
-                crossIndex++;
-                if (crossIndex >= 5) {
-                    crossIndex = 0;
-                    posY -= 96;
-                    posX = 208;
-                }
-            }.bind(this),
-        });
-    } else {
-
-    }
-}
-
 function spawnGuest(time) {
-    const guest = this.physics.add.sprite(368, 0, "ada").setOrigin(.5);
-    // const personChose = Phaser.Math.Between(0, 1);
-    guest.name = "name-" + parseInt((time / 1000));
+    const guestChose = Phaser.Math.Between(0, 1);
+    const guest = this.physics.add.sprite(368, 0, guestChose == 0 ? "ada" : "evan").setOrigin(.5);
+    guest.name = "guest-" + parseInt((time / 1000));
     guest.isOverlaping = false;
     guest.throughACross = false;
     guest.isOnTheCross = false;
     guest.setDepth(2);
-    guest.play("walking");
+    guest.play("walking-" + (guestChose == 0 ? "ada" : "evan"));
     guest.body.setSize(24, 32);
     this.guestsGrp.add(guest);
     return guest;
@@ -511,6 +670,51 @@ function findAplaceOnTheLine(guest) {
 }
 // GUEST ACTION
 
+// SCENE ACTIONS
+function updateCrossesOnTheFloor(action) {
+    if (!action) {
+        let posX = 208;
+        let posY = this.height - 96;
+        let crossIndex = 0;
+        const timer = this.time.addEvent({
+            delay: 100,
+            loop: false,
+            repeat: 14,
+            callback: function () {
+                const cross = this.physics.add.sprite(posX, posY, "cross").setOrigin(.5);
+                cross.setDepth(1);
+                cross.setFrame(4);
+                cross.setName("cross-" + timer.getRepeatCount());
+                cross.footsteps = 0;
+                cross.isBusyPlace = false;
+                this.crossesGrp.add(cross);
+                posX += 96;
+                crossIndex++;
+                if (crossIndex >= 5) {
+                    crossIndex = 0;
+                    posY -= 96;
+                    posX = 208;
+                }
+            }.bind(this),
+        });
+    } else if (action === "tutorial") {
+        const crossExample = this.physics.add.sprite(400, 356, "cross").setOrigin(.5);
+        crossExample.name = "cross-tutorial";
+        crossExample.setDepth(11);
+        crossExample.setFrame(2);
+        this.crossesGrp.add(crossExample);
+
+        this.arrowDown = this.add.sprite(crossExample.x, crossExample.y - 48, "arrow-down").setOrigin(.5);
+        this.arrowDown.setDepth(11);
+        this.arrowDown.play("blinking-arrow-down");
+
+        this.arrowRight = this.add.sprite(704, 64, "arrow-down").setOrigin(0.5);
+        this.arrowRight.setDepth(11);
+        this.arrowRight.play("blinking-arrow-down");
+        this.arrowRight.angle = -90;
+    }
+}
+
 function moveMemok(coordinates) {
     if (!coordinates) {
         const areaMemok = this.areaGrp.getChildren().find(v => v.name === "memok-area");
@@ -519,5 +723,5 @@ function moveMemok(coordinates) {
         this.physics.moveTo(this.memok, coordinates.x, coordinates.y, 150);
     }
 }
-
+// SCENE ACTIONS
 export default gameScene;

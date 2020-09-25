@@ -19,6 +19,7 @@ const preloadScene = new Phaser.Class({
         this.load.image("tileSetImg", "assets/tileSet.png");
         this.load.image("bucket", "assets/bucket.png");
         this.load.image("mask", "assets/mask.png");
+        this.load.image("hand", "assets/hand.png");
         this.load.image("vaccine", "assets/vaccine.png");
         this.load.image("ambulance", "assets/ambulance.png");
         this.load.image("manager", "assets/manager.png");
@@ -30,9 +31,16 @@ const preloadScene = new Phaser.Class({
         this.load.spritesheet("memok", "assets/memok.png", { frameWidth: 48, frameHeight: 64 });
         this.load.spritesheet("wilmer", "assets/wilmer.png", { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet("ada", "assets/ada.png", { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("ada-mask", "assets/ada-mask.png", { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("ada-sick", "assets/ada-mask.png", { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("ada-sick-mask", "assets/ada-sick-mask.png", { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet("evan", "assets/evan.png", { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("evan-mask", "assets/evan-mask.png", { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("evan-sick", "assets/evan-sick.png", { frameWidth: 48, frameHeight: 48 });
+        this.load.spritesheet("evan-sick-mask", "assets/evan-sick-mask.png", { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet("warning", "assets/warning.png", { frameWidth: 8, frameHeight: 16 });
         this.load.spritesheet("selected-item", "assets/selected-item.png", { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet("arrow-down", "assets/arrow-down.png", { frameWidth: 32, frameHeight: 32 });
         // Json
         this.load.tilemapTiledJSON("map", "assets/tileMap.json");
         // audio

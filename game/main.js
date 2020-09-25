@@ -8,7 +8,7 @@ const config = {
     pixelArt: true,
     physics: {
         default: 'arcade',
-        arcade: { debug: true }
+        arcade: { debug: false }
     },
     scale: {
         mode: Phaser.Scale.FIT,
