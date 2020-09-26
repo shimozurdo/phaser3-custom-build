@@ -13,9 +13,11 @@ var Phaser = {
     Core: require("core"),
     Class: require("utils/Class"),
     Create: require("create"),
-    Data: require("data"),
     Display: require("display"),
     Events: require("events/EventEmitter"),
+    Geom: {
+        Line: require("Geom/Line")
+    },
     Game: require("core/Game"),
     GameObjects: {
         DisplayList: require("gameobjects/DisplayList"),

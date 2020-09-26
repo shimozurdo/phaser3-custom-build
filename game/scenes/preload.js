@@ -24,10 +24,11 @@ const preloadScene = new Phaser.Class({
         this.load.image("ambulance", "assets/ambulance.png");
         this.load.image("manager", "assets/manager.png");
         this.load.image("close", "assets/close.png");
+        this.load.image("battery", "assets/battery.png");
         // sprite sheets
         this.load.spritesheet("more-text", "assets/more-text.png", { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet("cross", "assets/cross.png", { frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet("help", "assets/help.png", { frameWidth: 64, frameHeight: 32 });
+        this.load.spritesheet("help-alert", "assets/help-alert.png", { frameWidth: 64, frameHeight: 32 });
         this.load.spritesheet("memok", "assets/memok.png", { frameWidth: 48, frameHeight: 64 });
         this.load.spritesheet("wilmer", "assets/wilmer.png", { frameWidth: 48, frameHeight: 48 });
         this.load.spritesheet("ada", "assets/ada.png", { frameWidth: 48, frameHeight: 48 });
@@ -41,6 +42,7 @@ const preloadScene = new Phaser.Class({
         this.load.spritesheet("warning", "assets/warning.png", { frameWidth: 8, frameHeight: 16 });
         this.load.spritesheet("selected-item", "assets/selected-item.png", { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet("arrow-down", "assets/arrow-down.png", { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet("selected-guest", "assets/selected-guest.png", { frameWidth: 32, frameHeight: 32 });
         // Json
         this.load.tilemapTiledJSON("map", "assets/tileMap.json");
         // audio

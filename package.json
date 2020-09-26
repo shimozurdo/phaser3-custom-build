@@ -21,7 +21,7 @@
     "eventemitter3": "^4.0.7",
     "phaser": "^3.24.1",
     "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "^4.44.1",
+    "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12"
   }
 }
