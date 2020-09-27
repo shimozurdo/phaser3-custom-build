@@ -1,4 +1,4 @@
-import { createAnimations, uptateGameProgress, collideGuests, overlapAreas, overlapAPlaceInLine, showRules, typeWriterHandler, spawnGuest, findAplaceOnTheLine, moveMemok } from "./gameActions.js"
+import * as action from "./scene.actions.js"
 import CONST from "./const.js"
 const gameScene = new Phaser.Class({
     Extends: Phaser.Scene,
@@ -7,24 +7,22 @@ const gameScene = new Phaser.Class({
             Phaser.Scene.call(this, "gameScene");
         },
     preload: function () {
+        // binding actions to thins scene
+        this.createAnimations = action.createAnimations.bind(this);
+        this.showRules = action.showRules.bind(this);
+        this.typeWriterHandler = action.typeWriterHandler.bind(this);
+        this.uptateGameProgress = action.uptateGameProgress.bind(this);
+        this.findAplaceOnTheLine = action.findAplaceOnTheLine.bind(this);
+        this.moveMemok = action.moveMemok.bind(this);
+        this.spawnGuest = action.spawnGuest.bind(this);
+        this.resetGamePlay = action.resetGamePlay.bind(this);
+
+        // game config
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
-        this.gamePlay = {
-            delayGeneral: 500,
-            level: 1,
-            score: 0,
-            registeredGuests: 0,
-            delaySpawnGuest: 400,
-            delaySpawnGuestConst: 4000,
-            stepTutorialModal: -1,
-            gameOver: false,
-            gameStart: false,
-            infoTutorialIsTyping: false
-        }
         this.mouse = this.input.mousePointer;
-
-        //binding actions to thins scene
-        this.createAnimations = createAnimations.bind(this);
+        this.gamePlay = null;
+        this.resetGamePlay();
     },
     create: function () {
         // // MUSIC
@@ -45,8 +43,10 @@ const gameScene = new Phaser.Class({
         this.guestsGrp = this.add.group();
         this.crossesGrp = this.add.group();
         this.areaGrp = this.physics.add.staticGroup();
-        this.areaGrp.name = "areaGrp";
-        const areaGrpNamesList = [{ name: 'memok-area', x: 112, y: 294 }, { name: 'exit-left', x: 120, y: 362 }, { name: 'exit-right', x: 648, y: 362 }];
+        const areaGrpNamesList = [
+            { name: 'memok-area', x: 112, y: 294 },
+            { name: 'exit-left', x: 120, y: 362 },
+            { name: 'exit-right', x: 648, y: 362 }];
         // GROUPS
 
         // BACKGROUND        
@@ -55,7 +55,6 @@ const gameScene = new Phaser.Class({
         const tileSet = map.addTilesetImage("tileSet", "tileSetImg");
         map.createDynamicLayer("staticObjects", tileSet, 0, 0);
         this.add.bitmapText(this.width - 32, 16, "gem", "items", 22).setOrigin(.5);
-        // map.setCollisionBetween(10, 15, true, null, 1);
 
         this.rectBackground = this.add.rectangle(this.width / 2, this.height / 2, this.width, this.height, 0x000);
         this.rectBackground.alpha = 0.5;
@@ -68,7 +67,6 @@ const gameScene = new Phaser.Class({
 
         const surplus = 4;
         this.sizeRTB = 56;
-
         for (let i = 0; i < itemsBtnGroupNamesList.length; i++) {
             let posY = 32;
             let rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, (i === 0 ? posY : posY + (i * 64)) + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
@@ -82,7 +80,7 @@ const gameScene = new Phaser.Class({
 
         areaGrpNamesList.forEach(element => {
             let area = this.add.sprite(element.x, element.y, "cross").setOrigin(.5);
-            area.visible = true;
+            area.visible = false;
             area.name = element.name;
             this.areaGrp.add(area);
         });
@@ -113,6 +111,7 @@ const gameScene = new Phaser.Class({
         const block = this.physics.add.image(144, 384, "").setOrigin(0);
         block.scaleX = 15;
         block.visible = false;
+        block.staticBody = true;
 
         this.graphics = this.add.graphics({ lineStyle: { width: 2, color: 0x00D998 } });
         this.moveToLine = new Phaser.Geom.Line(0, 0, 0, 0);
@@ -182,7 +181,7 @@ const gameScene = new Phaser.Class({
             waitingGear.setDepth(5);
             waitingGear.name = "waitingGear-" + i;
             waitingGear.play(CONST.ANIM.WAIT + "-arrow-gears");
-            waitingGear.visible = false;
+            waitingGear.visible = true;
             this.waitingGearGrp.add(waitingGear);
 
             let waitingText = this.add.bitmapText(wilmer.x, this.height - 64, "gem", "0", 15).setOrigin(.5);
@@ -196,33 +195,33 @@ const gameScene = new Phaser.Class({
         this.helpAlerTxt.setTint(0x000);
         this.helpAlerTxt.visible = false;
 
-        this.infoTextMain = this.add.bitmapText(this.manager2.x + 32, this.manager2.y - 40, "gem", "", 16);
-        this.infoTextMain.visible = false;
-        this.infoTextMain.setDepth(10);
+        this.infoMainTxt = this.add.bitmapText(this.manager2.x + 32, this.manager2.y - 40, "gem", "", 16);
+        this.infoMainTxt.visible = false;
+        this.infoMainTxt.setDepth(10);
         // GAME OBJECTS
 
         //  COLLISIONS
-        this.physics.add.collider(this.guestsGrp, this.guestsGrp, collideGuests, null, this);
-        this.physics.add.overlap(this.guestsGrp, this.crossesGrp, overlapAPlaceInLine, null, this);
-        this.physics.add.overlap(this.memok, this.areaGrp, overlapAreas, null, this);
-        this.physics.add.overlap(this.guestsGrp, this.areaGrp, overlapAreas, null, this);
+        this.physics.add.collider(this.guestsGrp, this.guestsGrp, action.collideGuests, null, this);
+        this.physics.add.overlap(this.guestsGrp, this.crossesGrp, action.overlapAPlaceInLine, null, this);
+        this.physics.add.overlap(this.memok, this.areaGrp, action.overlapAreas, null, this);
+        this.physics.add.overlap(this.guestsGrp, this.areaGrp, action.overlapAreas, null, this);
         this.physics.add.collider(this.guestsGrp, block);
         //  COLLISIONS
 
         // EVENTS
         this.input.on('gameobjectdown', function (pointer, child) {
             if (child.name === "helpAlertBtn")
-                showRules.call(this, true);
+                this.showRules(true);
             else if (child.name === "closeModalBtn") {
                 this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
                 this.gamePlay.stepTutorialModal = 1;
-                showRules.call(this, false);
+                this.showRules(false);
                 if (!this.gamePlay.gameStart) {
                     this.time.addEvent({
                         delay: this.gamePlay.delayGeneral,
                         callback: function () {
                             this.gamePlay.gameStart = true;
-                            moveMemok.call(this);
+                            this.moveMemok();
                         }.bind(this),
                         loop: false
                     });
@@ -230,10 +229,10 @@ const gameScene = new Phaser.Class({
             }
             else if (child.name === "showMoreInfoBtn" && !this.gamePlay.infoTutorialIsTyping) {
                 this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
-                showRules.call(this, true);
+                this.showRules(true);
                 this.gamePlay.stepTutorialModal++;
-                uptateGameProgress.call(this);
-                typeWriterHandler.call(this, { name: "rules", desc: "desc" + this.gamePlay.stepTutorialModal });
+                this.uptateGameProgress();
+                this.typeWriterHandler({ arrayText: CONST.TUTORIAL.RULES[this.gamePlay.stepTutorialModal], textObj: this.infoMainTxt });
             }
             else if (child.name === "bucketBtn" && (this.gamePlay.stepTutorialModal === 2 || this.gamePlay.stepTutorialModal === -1)) {
                 this.selectedItem.setPosition(child.x, child.y);
@@ -286,6 +285,7 @@ const gameScene = new Phaser.Class({
                 children.forEach(function (child) {
                     if (child.name.includes("guest")) {
                         this.selectedGuest.setPosition(child.x, child.y);
+                        this.selectedGuest.child = child;
                         if (this.gamePlay.stepTutorialModal > 0)
                             this.selectedGuest.setDepth(11);
                     }
@@ -316,8 +316,8 @@ const gameScene = new Phaser.Class({
             delay: this.gamePlay.delayGeneral,
             callback: function () {
                 this.gamePlay.stepTutorialModal = 1;
-                showRules.call(this, true);
-                typeWriterHandler.call(this, { name: "rules", desc: "desc" + this.gamePlay.stepTutorialModal });
+                this.showRules(true);
+                this.typeWriterHandler({ arrayText: CONST.TUTORIAL.RULES[this.gamePlay.stepTutorialModal], textObj: this.infoMainTxt });
                 this.warningIcon.setFrame(0);
             }.bind(this),
             loop: false
@@ -332,11 +332,11 @@ const gameScene = new Phaser.Class({
             this.gamePlay.delaySpawnGuest -= delta;
             if (this.gamePlay.delaySpawnGuest < 0) {
                 this.gamePlay.delaySpawnGuest = this.gamePlay.delaySpawnGuestConst;
-                const guest = spawnGuest.call(this, time);
+                const guest = this.spawnGuest(time);
                 guest.name = "guest-" + parseInt((time / 1000));
                 this.warningIcon.setFrame(0);
                 this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
-                findAplaceOnTheLine.call(this, guest);
+                this.findAplaceOnTheLine(guest);
             }
 
             this.rechargeTimeBarGrp.children.each((rechargeTimeBar) => {
@@ -361,6 +361,8 @@ const gameScene = new Phaser.Class({
             this.warningIcon.setPosition(this.memok.x, this.memok.y - 32);
             // pinned sprites   
         }
+        if (this.selectedItem.name === "handBtn" && this.selectedGuest.x > 0 && this.selectedGuest.child)
+            this.selectedGuest.setPosition(this.selectedGuest.child.x, this.selectedGuest.child.y);
 
         this.waitingTextGrp.children.each((child) => {
             if (child.visible) {
@@ -372,6 +374,8 @@ const gameScene = new Phaser.Class({
                     child.registeredGuest.exit = area.name;
                     this.physics.moveToObject(child.registeredGuest, area, 50);
                     child.visible = false;
+                    let waitingGear = this.waitingGearGrp.getChildren().find(v => v.name === "waitingGear" + "-" + child.name.split("-")[1]);
+                    waitingGear.visible = false;
                 }
                 else {
                     child.text = parseInt(child.delay / 1000);
@@ -395,15 +399,15 @@ const gameScene = new Phaser.Class({
             this.moveToLine.setTo(this.selectedGuest.x, this.selectedGuest.y, lastPost.x, lastPost.y);
         }
 
-        this.guestsGrp.children.each(function (guest) {
+        this.guestsGrp.children.each(function (child) {
 
-            if (guest.registered)
-                guest.setVelocityY(20);
+            if (child.status === CONST.GUEST_STATUS.REGISTERED)
+                child.setVelocityY(20);
 
-            if (!guest.isOverlaping)
-                guest.throughACross = false;
+            if (!child.isOverlaping)
+                child.throughACross = false;
 
-            guest.isOverlaping = false;
+            child.isOverlaping = false;
         });
         //GAME LOOP
     }

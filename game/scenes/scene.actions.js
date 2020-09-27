@@ -1,6 +1,6 @@
 import CONST from './const.js'
 // UPDATE GAME PLAY
-export function uptateGameProgress() {
+function uptateGameProgress() {
     //tutorial
     if (!this.gameStart) {
 
@@ -32,7 +32,6 @@ export function uptateGameProgress() {
         } else if (this.gamePlay.stepTutorialModal === 3) {
 
             updateCrossesOnTheFloor.call(this);
-
             itemBucketBtn.setDepth(1);
             itemMaskBtn.setDepth(11);
 
@@ -42,6 +41,7 @@ export function uptateGameProgress() {
 
             const guest = this.physics.add.sprite(350, 300, "ada").setOrigin(.5).setInteractive({ cursor: "pointer" });;
             guest.name = "guest-tutorial";
+            guest.status = CONST.GUEST_STATUS.OK;
             guest.setDepth(11);
             guest.play(CONST.ANIM.WALK + "-ada");
 
@@ -69,8 +69,8 @@ export function uptateGameProgress() {
             this.arrowDown.setPosition(wilmer.x + 30, wilmer.y - 50);
             this.arrowDown.angle = 25;
             const guest = this.guestsGrp.getChildren().find(v => v.name === "guest-tutorial");
-
             if (!guest.isOverlaping) {
+                guest.status = CONST.GUEST_STATUS.WAITING;
                 const cross = this.crossesGrp.getChildren().find(v => v.name === "cross-tutorial");
                 guest.setPosition(cross.x, cross.y);
             }
@@ -96,29 +96,28 @@ export function uptateGameProgress() {
 // UPDATE GAME PLAY
 
 // CAll BACK COLLISION
-export function collideGuests(guest1, guest2) {
+function collideGuests(guest1, guest2) {
     guest1.setVelocity(0);
     guest2.setVelocity(0);
 }
 
-export function overlapAreas(child, area) {
+function overlapAreas(child, area) {
     if (child.x > area.x - 8 &&
         child.x < area.x + 8 &&
         child.y > area.y - 8 &&
         child.y < area.y + 8) {
         child.setVelocity(0);
-        if (child.registered === true) {
-            child.registered = false;
-
+        if (child.status !== CONST.GUEST_STATUS.REGISTERED) {
+            child.status = CONST.GUEST_STATUS.REGISTERED;            
         }
     }
 }
 
-export function overlapAPlaceInLine(guest, cross) {
+function overlapAPlaceInLine(guest, cross) {
 
     guest.isOverlaping = true;
 
-    if (guest.isOnTheCross)
+    if (guest.status === CONST.GUEST_STATUS.WAITING || guest.status === CONST.GUEST_STATUS.REGISTERED)
         return;
 
     if (!guest.throughACross) {
@@ -136,7 +135,7 @@ export function overlapAPlaceInLine(guest, cross) {
 
             guest.setVelocity(0);
             guest.isOnTheCross = true;
-            guest.registered = true;
+            guest.status = CONST.GUEST_STATUS.WAITING;
 
             cross.isBusyPlace = true;
             if (this.gamePlay.stepTutorialModal == -1) {
@@ -149,9 +148,9 @@ export function overlapAPlaceInLine(guest, cross) {
 // CAll BACK COLLISION
 
 // RULES
-export function showRules(showMainText) {
+function showRules(showMainText) {
     this.textLayer.visible = showMainText;
-    this.infoTextMain.visible = showMainText;
+    this.infoMainTxt.visible = showMainText;
     this.rectBackground.visible = showMainText;
     this.helpAlerTxt.visible = !showMainText;
     this.manager.visible = !showMainText;
@@ -169,54 +168,17 @@ export function showRules(showMainText) {
     });
 }
 
-export function typeWriterHandler(infoObj) {
-    const textInfoList = [
-        {
-            name: "rules",
-            "desc1": [
-                "Hello Memok, welcome to your first day of work,",
-                "I am the manager of the Evergreen hotel, below",
-                "I will explain how you are going to help our guests.\n",
-                "On the right side there are items that you can use."
-            ],
-            "desc2": [
-                "The bucket will serve you to prevent that guests",
-                "bunch up highlighting the X marks on the floor, just",
-                "select the bucket and paint the X with the mouse."
-            ],
-            "desc3": [
-                "The masks will serve to reduce infections, so you",
-                "can also put them on the guests. Select the mask",
-                "and put on the guest with the mouse."
-            ],
-            "desc4": [
-                "You could also kindly instruct guests to stand on",
-                "an ​​mark x selecting the hand and then to the guest.",
-                "Remember the guest can't stand on an unpainted x mark",
-            ],
-            "desc5": [
-                "Remember to continuously charge the batteries of the",
-                "Wilmer robot, our receptionist, in this way you will,",
-                "speed up the entry of guests.",
-                "Select the battery element with the mouse and",
-                "put them on the receptionist."
-            ], "desc6": [
-                "Once this is done, the guest will only have to wait,",
-                "until he is registered to enter the hotel and that is",
-                "all, simple right?"
-            ]
-        }
-    ];
+function typeWriterHandler(data) {
+
     this.gamePlay.infoTutorialIsTyping = true;
-    const textInfoItem = textInfoList.find(x => x.name === infoObj.name);
-    this.infoTextMain.text = "";
+    data.textObj.text = "";
     let index = 0
     const time = this.time.addEvent({
         delay: 250,
         loop: false,
-        repeat: textInfoItem[infoObj.desc].length - 1,
+        repeat: data.arrayText.length - 1,
         callback: function () {
-            this.infoTextMain.text += textInfoItem[infoObj.desc][index] + "\n";
+            data.textObj.text += data.arrayText[index] + "\n";
             index++;
             if (time.getRepeatCount() <= 0)
                 this.gamePlay.infoTutorialIsTyping = false;
@@ -227,15 +189,15 @@ export function typeWriterHandler(infoObj) {
 // RULES
 
 // GUEST ACTION
-export function spawnGuest(time) {
+function spawnGuest(time) {
     const guestChose = Phaser.Math.Between(0, 1);
     const guest = this.physics.add.sprite(368, 0, guestChose == 0 ? "ada" : "evan").setOrigin(.5).setInteractive({ cursor: "pointer" });
     guest.name = "guest-" + parseInt((time / 1000));
     guest.isOverlaping = false;
     guest.throughACross = false;
-    guest.isOnTheCross = false;
+    guest.status = CONST.GUEST_STATUS.OK;
     guest.setDepth(2);
-    guest.play(CONST.ANIM.WALK + (guestChose == 0 ? "ada" : "evan"));
+    guest.play(CONST.ANIM.WALK + (guestChose == 0 ? "-ada" : "-evan"));
     guest.body.setSize(24, 32);
     this.guestsGrp.add(guest);
     return guest;
@@ -279,7 +241,7 @@ function isThePlaceIsAvailable(cross) {
     return place ? true : false;
 }
 
-export function findAplaceOnTheLine(guest) {
+function findAplaceOnTheLine(guest) {
     const availableCrosses = placesAvailableOnTheLine.call(this);
     if (!availableCrosses)
         return false;
@@ -292,7 +254,7 @@ export function findAplaceOnTheLine(guest) {
 
 // SCENE ACTIONS
 
-export function createAnimations(key, texture, frameRate, repeat) {
+function createAnimations(key, texture, frameRate, repeat) {
     this.anims.create({
         key: key,
         frames: this.anims.generateFrameNumbers(texture),
@@ -331,7 +293,7 @@ function updateCrossesOnTheFloor(update) {
     }
 }
 
-export function moveMemok(coordinates) {
+function moveMemok(coordinates) {
     if (!coordinates) {
         const areaMemok = this.areaGrp.getChildren().find(v => v.name === "memok-area");
         this.physics.moveToObject(this.memok, areaMemok, 150);
@@ -339,4 +301,33 @@ export function moveMemok(coordinates) {
         this.physics.moveTo(this.memok, coordinates.x, coordinates.y, 150);
     }
 }
+
+function resetGamePlay() {
+    this.gamePlay = {
+        delayGeneral: 500,
+        level: 1,
+        score: 0,
+        registeredGuests: 0,
+        delaySpawnGuest: 400,
+        delaySpawnGuestConst: 4000,
+        stepTutorialModal: -1,
+        gameOver: false,
+        gameStart: false,
+        infoTutorialIsTyping: false
+    }
+}
 // SCENE ACTIONS
+
+export {
+    moveMemok,
+    createAnimations,
+    findAplaceOnTheLine,
+    spawnGuest,
+    typeWriterHandler,
+    showRules,
+    overlapAPlaceInLine,
+    overlapAreas,
+    collideGuests,
+    uptateGameProgress,
+    resetGamePlay
+}

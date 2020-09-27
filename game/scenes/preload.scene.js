@@ -1,6 +1,7 @@
-import { createAnimations } from "./gameActions.js"
+import { createAnimations } from "./scene.actions.js"
 import CONST from './const.js'
 
+// console.log(actions)
 const preloadScene = new Phaser.Class({
 
     Extends: Phaser.Scene,

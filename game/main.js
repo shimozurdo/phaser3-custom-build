@@ -1,6 +1,6 @@
-import preloadScene from './scenes/preload.js'
-import titleScene from './scenes/title.js'
-import gameScene from './scenes/game.js'
+import preloadScene from './scenes/preload.scene.js'
+import titleScene from './scenes/title.scene.js'
+import gameScene from './scenes/game.scene.js'
 
 const config = {
     title: "Saving the day",
@@ -8,7 +8,7 @@ const config = {
     pixelArt: true,
     physics: {
         default: 'arcade',
-        arcade: { debug: false }
+        arcade: { debug: true }
     },
     scale: {
         mode: Phaser.Scale.FIT,
@@ -17,7 +17,7 @@ const config = {
         width: 800,
         height: 450
     },
-    scene: [preloadScene, titleScene, gameScene],
+    scene: [preloadScene, gameScene],
     dom: {
         createContainer: true
     },
