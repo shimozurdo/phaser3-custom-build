@@ -143,6 +143,13 @@ const gameScene = new Phaser.Class({
             frameRate: 4,
             repeat: -1
         });
+
+        this.anims.create({
+            key: "waiting-gears",
+            frames: this.anims.generateFrameNumbers("gears"),
+            frameRate: 4,
+            repeat: -1
+        });
         // ANIMATIONS
 
         // GROUPS
@@ -151,11 +158,13 @@ const gameScene = new Phaser.Class({
         this.rechargeTimeBarGrp = this.add.group();
         this.wilmersGrp = this.add.group();
         this.liveBarWilmerGrp = this.add.group();
+        this.waitingTextGrp = this.add.group();
+        this.waitingGearGrp = this.add.group();
         this.guestsGrp = this.add.group();
         this.crossesGrp = this.add.group();
         this.areaGrp = this.physics.add.staticGroup();
         this.areaGrp.name = "areaGrp";
-        const areaGrpNamesList = [{ name: 'memok-area', x: 112, y: 294 }, { name: 'exit-1', x: 120, y: 362 }, { name: 'exit-2', x: 648, y: 362 }];
+        const areaGrpNamesList = [{ name: 'memok-area', x: 112, y: 294 }, { name: 'exit-left', x: 120, y: 362 }, { name: 'exit-right', x: 648, y: 362 }];
         // GROUPS
 
         // BACKGROUND        
@@ -179,6 +188,7 @@ const gameScene = new Phaser.Class({
         this.sizeRTB = 56;
 
         for (let i = 0; i < itemsBtnGroupNamesList.length; i++) {
+
             let posY = 32;
             let rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, (i === 0 ? posY : posY + (i * 64)) + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
             rechargeTimeBar.setDepth(4);
@@ -187,11 +197,12 @@ const gameScene = new Phaser.Class({
             rechargeTimeBar.delay = 10000;
             rechargeTimeBar.delayConst = 10000;
             this.rechargeTimeBarGrp.add(rechargeTimeBar);
+
         }
 
         areaGrpNamesList.forEach(element => {
             let area = this.add.sprite(element.x, element.y, "cross").setOrigin(.5);
-            area.visible = false;
+            area.visible = true;
             area.name = element.name;
             this.areaGrp.add(area);
         });
@@ -271,8 +282,8 @@ const gameScene = new Phaser.Class({
 
         let posWilmerX = 224;
         for (let i = 0; i < 5; i++) {
-            const wilmer = this.add.sprite(posWilmerX - 16, this.height - 30, "dude");
-            wilmer.name = "wilmer";
+            const wilmer = this.add.sprite(posWilmerX - 16, this.height - 30, "wilmer").setInteractive({ cursor: "pointer" });
+            wilmer.name = "wilmer-" + i;
             wilmer.anims.play("idle");
             this.wilmersGrp.add(wilmer);
             posWilmerX += 96;
@@ -280,11 +291,25 @@ const gameScene = new Phaser.Class({
             this.add.rectangle(wilmer.x + 14, wilmer.y - 9, 10, 18, 0x000).setOrigin(0);
             let liveBarWilmer = this.add.rectangle(wilmer.x + 22, wilmer.y + 8, 6, i === 2 ? 8 : 16, 0x05DA73).setOrigin(0);
             liveBarWilmer.setDepth(1);
-            liveBarWilmer.name = "liveBarWilmer" + i;
+            liveBarWilmer.name = "liveBarWilmer-" + i;
             liveBarWilmer.delay = 10000;
             liveBarWilmer.delayConst = 10000;
             liveBarWilmer.angle = 180;
             this.liveBarWilmerGrp.add(liveBarWilmer);
+
+            let waitingGear = this.add.sprite(wilmer.x, this.height - 64, "gears");
+            waitingGear.setScale(.5);
+            waitingGear.setDepth(5);
+            waitingGear.name = "waitingGear-" + i;
+            waitingGear.play("waiting-gears");
+            waitingGear.visible = false;
+            this.waitingGearGrp.add(waitingGear);
+
+            let waitingText = this.add.bitmapText(wilmer.x, this.height - 64, "gem", "0", 15).setOrigin(.5);
+            waitingText.setDepth(5);
+            waitingText.name = "waitingText-" + i;
+            waitingText.visible = false;
+            this.waitingTextGrp.add(waitingText);
         }
 
         this.helpAlerTxt = this.add.bitmapText(this.width - 30, this.height - 80, "gem", "INFO!", 14).setOrigin(0.5);
@@ -300,6 +325,7 @@ const gameScene = new Phaser.Class({
         this.physics.add.collider(this.guestsGrp, this.guestsGrp, collideGuests, null, this);
         this.physics.add.overlap(this.guestsGrp, this.crossesGrp, overlapAPlaceInLine, null, this);
         this.physics.add.overlap(this.memok, this.areaGrp, overlapAreas, null, this);
+        this.physics.add.overlap(this.guestsGrp, this.areaGrp, overlapAreas, null, this);
         this.physics.add.collider(this.guestsGrp, block);
         //  COLLISIONS
 
@@ -332,55 +358,62 @@ const gameScene = new Phaser.Class({
             else if (child.name === "bucketBtn" && (this.gamePlay.stepTutorialModal === 2 || this.gamePlay.stepTutorialModal === -1)) {
                 this.selectedItem.setPosition(child.x, child.y);
                 this.selectedItem.name = "bucketBtn";
-                if (this.gamePlay.stepTutorialModal === 2)
-                    this.selectedItem.setDepth(11);
             }
             else if (child.name === "maskBtn" && (this.gamePlay.stepTutorialModal === 3 || this.gamePlay.stepTutorialModal === -1)) {
                 this.selectedItem.setPosition(child.x, child.y);
                 this.selectedItem.name = "maskBtn";
-                if (this.gamePlay.stepTutorialModal === 3)
-                    this.selectedItem.setDepth(11);
             }
             else if (child.name === "handBtn" && (this.gamePlay.stepTutorialModal === 4 || this.gamePlay.stepTutorialModal === -1)) {
                 this.selectedItem.setPosition(child.x, child.y);
                 this.selectedItem.name = "handBtn";
-                if (this.gamePlay.stepTutorialModal === 4)
-                    this.selectedItem.setDepth(11);
             }
-            if (child.name.includes("cross") && this.selectedItem.name === "bucketBtn")
+            else if (child.name === "batteryBtn" && (this.gamePlay.stepTutorialModal === 5 || this.gamePlay.stepTutorialModal === -1)) {
+                this.selectedItem.setPosition(child.x, child.y);
+                this.selectedItem.name = "batteryBtn";
+            } else if (child.name.includes("cross") && this.selectedItem.name === "bucketBtn")
                 child.setFrame(0);
-            if (child.name.includes("cross") && this.selectedItem.name === "handBtn" && this.selectedItem.touchedItem) {
-                this.physics.moveToObject(this.selectedItem.touchedItem, child, 50);
-                this.selectedItem.touchedItem = null;
-                this.arrowDown.setPosition(-100, -100);
-            }
-            if (child.name.includes("guest") && this.selectedItem.name === "handBtn") {
+            else if (child.name.includes("cross") && this.selectedItem.name === "handBtn" && this.selectedItem.touchedItem) {
+                if (child.footsteps < 4) {
+                    this.physics.moveToObject(this.selectedItem.touchedItem, child, 50);
+                    this.selectedItem.touchedItem = null;
+                }
+            } else if (child.name.includes("guest") && this.selectedItem.name === "handBtn") {
                 this.selectedGuest.setPosition(child.x, child.y);
                 this.selectedItem.touchedItem = child;
                 if (this.gamePlay.stepTutorialModal > 0) {
                     this.selectedGuest.setDepth(11);
                     this.graphics.setDepth(10)
                 }
-            }
-            if (child.name.includes("guest") && this.selectedItem.name === "maskBtn") {
+            } else if (child.name.includes("guest") && this.selectedItem.name === "maskBtn") {
                 const currentAnimation = child.anims.getCurrentKey();
                 const animationMask = !currentAnimation.includes("mask") ? currentAnimation + "-mask" : currentAnimation;
                 child.play(animationMask);
+            } else if (child.name.includes("wilmer") && this.selectedItem.name === "batteryBtn") {
+                const liveBarWilmer = this.liveBarWilmerGrp.getChildren().find(v => v.name === "liveBarWilmer-" + child.name.split("-")[1]);
+                liveBarWilmer.height = 16;
             }
         }, this);
 
         this.input.on('pointerover', function (pointer, children) {
             if (this.selectedItem.name === "bucketBtn" || (this.selectedItem.name === "handBtn" && this.selectedGuest.x > 0))
-                children.forEach(function (cross) {
-                    if (cross.name.includes("cross") && cross.footsteps > 0)
-                        this.selectedCross.setPosition(cross.x, cross.y);
+                children.forEach(function (child) {
+                    if (child.name.includes("cross") && child.footsteps < 4)
+                        this.selectedCross.setPosition(child.x, child.y);
                     if (this.gamePlay.stepTutorialModal > 0)
                         this.selectedCross.setDepth(11);
                 }, this);
             if (this.selectedItem.name === "maskBtn" || this.selectedItem.name === "handBtn")
-                children.forEach(function (guest) {
-                    if (guest.name.includes("guest")) {
-                        this.selectedGuest.setPosition(guest.x, guest.y);
+                children.forEach(function (child) {
+                    if (child.name.includes("guest")) {
+                        this.selectedGuest.setPosition(child.x, child.y);
+                        if (this.gamePlay.stepTutorialModal > 0)
+                            this.selectedGuest.setDepth(11);
+                    }
+                }, this);
+            if (this.selectedItem.name === "batteryBtn")
+                children.forEach(function (child) {
+                    if (child.name.includes("wilmer")) {
+                        this.selectedGuest.setPosition(child.x, child.y);
                         if (this.gamePlay.stepTutorialModal > 0)
                             this.selectedGuest.setDepth(11);
                     }
@@ -412,15 +445,69 @@ const gameScene = new Phaser.Class({
         // START GAME
     },
     update: function (time, delta) {
+
+        //GAME LOOP
+        if (!this.gamePlay.gameOver && this.gamePlay.gameStart) {
+
+            this.gamePlay.delaySpawnGuest -= delta;
+            if (this.gamePlay.delaySpawnGuest < 0) {
+                this.gamePlay.delaySpawnGuest = this.gamePlay.delaySpawnGuestConst;
+                const guest = spawnGuest.call(this, time);
+                guest.name = "guest-" + parseInt((time / 1000));
+                this.warningIcon.setFrame(0);
+                this.warningIcon.play("blinking-warning");
+                findAplaceOnTheLine.call(this, guest);
+            }
+
+            this.rechargeTimeBarGrp.children.each((rechargeTimeBar) => {
+                rechargeTimeBar.delay -= delta;
+                if (rechargeTimeBar.delay <= 0)
+                    rechargeTimeBar.width = 0;
+                else {
+                    rechargeTimeBar.width = this.sizeRTB * rechargeTimeBar.delay / rechargeTimeBar.delayConst;
+                }
+            });
+
+            this.liveBarWilmerGrp.children.each((liveBarWilmer) => {
+                liveBarWilmer.delay -= delta;
+                if (liveBarWilmer.delay <= 0)
+                    liveBarWilmer.height = 0;
+                else {
+                    liveBarWilmer.height = 16 * liveBarWilmer.delay / liveBarWilmer.delayConst;
+                }
+            });
+
+            // pinned sprites
+            this.warningIcon.setPosition(this.memok.x, this.memok.y - 32);
+            // pinned sprites   
+        }
+
+        this.waitingTextGrp.children.each((child) => {
+            if (child.visible) {
+                child.delay -= delta;
+                if (child.delay <= 0) {
+                    child.delay = 0;
+                    const areaDir = Phaser.Math.Between(0, 1) === 1 ? "left" : "right";
+                    let area = this.areaGrp.getChildren().find(v => v.name === "exit-" + areaDir);
+                    child.registeredGuest.exit = area.name;
+                    this.physics.moveToObject(child.registeredGuest, area, 50);
+                    child.visible = false;
+                }
+                else {
+                    child.text = parseInt(child.delay / 1000);
+                }
+            }
+        }, this);
+
         this.graphics.clear();
         if (this.selectedGuest.x > 0 && this.selectedItem.name === "handBtn" && this.selectedItem.touchedItem) {
             let lastPost = {
-                x: this.mouse.position.x < this.selectedGuest.x ? 200 : this.width - 200,
-                y: this.mouse.position.y < this.selectedGuest.y ? 150 : this.height - 80
+                x: this.mouse.position.x < this.selectedGuest.x ? 192 : this.width - 192,
+                y: this.mouse.position.y < this.selectedGuest.y ? 160 : this.height - 64
             };
-            if (this.mouse.position.x > 200 && this.mouse.position.x < this.width - 200)
+            if (this.mouse.position.x > 192 && this.mouse.position.x < this.width - 192)
                 lastPost.x = this.mouse.position.x;
-            if (this.mouse.position.y > 150 && this.mouse.position.y < this.height - 80)
+            if (this.mouse.position.y > 160 && this.mouse.position.y < this.height - 64)
                 lastPost.y = this.mouse.position.y;
 
             this.graphics.clear();
@@ -428,43 +515,11 @@ const gameScene = new Phaser.Class({
             this.moveToLine.setTo(this.selectedGuest.x, this.selectedGuest.y, lastPost.x, lastPost.y);
         }
 
-        //GAME LOOP
-        if (this.gamePlay.gameOver || !this.gamePlay.gameStart)
-            return;
-
-        this.gamePlay.delaySpawnGuest -= delta;
-        if (this.gamePlay.delaySpawnGuest < 0) {
-            this.gamePlay.delaySpawnGuest = this.gamePlay.delaySpawnGuestConst;
-            const guest = spawnGuest.call(this, time);
-            guest.name = "guest-" + parseInt((time / 1000));
-            this.warningIcon.setFrame(0);
-            this.warningIcon.play("blinking-warning");
-            findAplaceOnTheLine.call(this, guest);
-        }
-
-        this.rechargeTimeBarGrp.children.each((rechargeTimeBar) => {
-            rechargeTimeBar.delay -= delta;
-            if (rechargeTimeBar.delay <= 0)
-                rechargeTimeBar.width = 0;
-            else {
-                rechargeTimeBar.width = this.sizeRTB * rechargeTimeBar.delay / rechargeTimeBar.delayConst;
-            }
-        });
-
-        this.liveBarWilmerGrp.children.each((liveBarWilmer) => {
-            liveBarWilmer.delay -= delta;
-            if (liveBarWilmer.delay <= 0)
-                liveBarWilmer.height = 0;
-            else {
-                liveBarWilmer.height = 16 * liveBarWilmer.delay / liveBarWilmer.delayConst;
-            }
-        });
-
-        // pinned sprites
-        this.warningIcon.setPosition(this.memok.x, this.memok.y - 32);
-        // pinned sprites   
-
         this.guestsGrp.children.each(function (guest) {
+
+            if (guest.registered)
+                guest.setVelocityY(20);
+
             if (!guest.isOverlaping)
                 guest.throughACross = false;
 

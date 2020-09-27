@@ -43,6 +43,7 @@ const preloadScene = new Phaser.Class({
         this.load.spritesheet("selected-item", "assets/selected-item.png", { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet("arrow-down", "assets/arrow-down.png", { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet("selected-guest", "assets/selected-guest.png", { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet("gears", "assets/gears.png", { frameWidth: 32, frameHeight: 32 });
         // Json
         this.load.tilemapTiledJSON("map", "assets/tileMap.json");
         // audio

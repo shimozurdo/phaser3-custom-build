@@ -2,6 +2,7 @@
 export function uptateGameProgress() {
     //tutorial
     if (!this.gameStart) {
+
         const items = this.itemsBtnGroup.getChildren().filter(v => v.name === "showMoreInfoBtn" || v.name === "closeModalBtn");
         items[0].setDepth(10);
         items[1].setDepth(10);
@@ -9,17 +10,28 @@ export function uptateGameProgress() {
         let itemMaskBtn = this.itemsBtnGroup.getChildren().find(v => v.name === "maskBtn");
         let itemHandBtn = this.itemsBtnGroup.getChildren().find(v => v.name === "handBtn");
         let itemBaterryBtn = this.itemsBtnGroup.getChildren().find(v => v.name === "batteryBtn");
-        this.selectedItem.name = "";
-        if (this.gamePlay.stepTutorialModal === 2) {
-            itemBucketBtn.setDepth(11);
-            updateCrossesOnTheFloor.call(this, "tutorial");
 
+        this.selectedItem.name = null;
+        this.selectedItem.setDepth(11);
+
+        if (this.gamePlay.stepTutorialModal === 2) {
+
+            itemBucketBtn.setDepth(11);
             this.arrowDown.setPosition(400, 308);
             this.arrowDown.setScale(1.5)
             this.arrowRight.setPosition(704, 64);
+            const cross = this.physics.add.sprite(400, 368, "cross").setOrigin(.5).setInteractive({ cursor: "pointer" });;
+            cross.name = "cross-tutorial";
+            cross.setDepth(11);
+            cross.setFrame(2);
+            cross.footsteps = 2;
+            cross.body.setSize(16, 16);
+            this.crossesGrp.add(cross);
 
         } else if (this.gamePlay.stepTutorialModal === 3) {
+
             updateCrossesOnTheFloor.call(this);
+
             itemBucketBtn.setDepth(1);
             itemMaskBtn.setDepth(11);
 
@@ -37,21 +49,48 @@ export function uptateGameProgress() {
             this.guestsGrp.add(guest);
 
         } else if (this.gamePlay.stepTutorialModal === 4) {
+
             this.selectedItem.setPosition(-100, -100);
             itemMaskBtn.setDepth(1);
             itemHandBtn.setDepth(11);
             this.arrowRight.setPosition(this.arrowRight.x, this.arrowRight.y + 64);
+
         } else if (this.gamePlay.stepTutorialModal === 5) {
+
             this.selectedItem.setPosition(-100, -100);
             itemHandBtn.setDepth(1);
             itemBaterryBtn.setDepth(11);
             this.arrowRight.setPosition(this.arrowRight.x, this.arrowRight.y + 64);
-            const wilmer = this.wilmersGrp.getChildren().find(v => v.name === "wilmer2");
-            const liveBarWilmer = this.liveBarWilmerGrp.getChildren().find(v => v.name === "liveBarWilmer2");
+            const wilmer = this.wilmersGrp.getChildren().find(v => v.name === "wilmer-2");
+            const liveBarWilmer = this.liveBarWilmerGrp.getChildren().find(v => v.name === "liveBarWilmer-2");
             liveBarWilmer.setDepth(11);
             wilmer.setDepth(11);
+            this.arrowDown.setPosition(wilmer.x + 30, wilmer.y - 50);
+            this.arrowDown.angle = 25;
+            const guest = this.guestsGrp.getChildren().find(v => v.name === "guest-tutorial");
+
+            if (!guest.isOverlaping) {
+                const cross = this.crossesGrp.getChildren().find(v => v.name === "cross-tutorial");
+                guest.setPosition(cross.x, cross.y);
+            }
+
+        } else if (this.gamePlay.stepTutorialModal === 6) {
+
+            const waitingText = this.waitingTextGrp.getChildren().find(v => v.name === "waitingText-2");
+            waitingText.setDepth(12);
+            waitingText.visible = true;
+            waitingText.delay = 2000;
+            waitingText.delayConst = 2000;
+            const waitingGear = this.waitingGearGrp.getChildren().find(v => v.name === "waitingGear-2");
+            waitingGear.setDepth(12);
+            waitingGear.visible = true;
+
+            const guest = this.guestsGrp.getChildren().find(v => v.name === "guest-tutorial");
+            waitingText.registeredGuest = guest;
+
         }
     }
+    //tutorial
 }
 // UPDATE GAME PLAY
 
@@ -61,20 +100,25 @@ export function collideGuests(guest1, guest2) {
     guest2.setVelocity(0);
 }
 
-export function overlapAreas(memok, area) {
-    if (memok.x > area.x - 8 &&
-        memok.x < area.x + 8 &&
-        memok.y > area.y - 8 &&
-        memok.y < area.y + 8 &&
-        area.name === "memok-area")
-        memok.setVelocity(0);
+export function overlapAreas(child, area) {
+    if (child.x > area.x - 8 &&
+        child.x < area.x + 8 &&
+        child.y > area.y - 8 &&
+        child.y < area.y + 8) {
+        child.setVelocity(0);
+        if (child.registered === true) {
+            child.registered = false;
+            
+        }
+    }
 }
 
 export function overlapAPlaceInLine(guest, cross) {
-    if (guest.isOnTheCross)
-        return;
 
     guest.isOverlaping = true;
+
+    if (guest.isOnTheCross)
+        return;
 
     if (!guest.throughACross) {
         guest.throughACross = true;
@@ -88,9 +132,16 @@ export function overlapAPlaceInLine(guest, cross) {
         guest.y < cross.y + 8 &&
         !cross.isBusyPlace) {
         if (isThePlaceIsAvailable.call(this, cross)) {
+
             guest.setVelocity(0);
             guest.isOnTheCross = true;
+            guest.registered = true;
+
             cross.isBusyPlace = true;
+            if (this.gamePlay.stepTutorialModal == -1) {
+                let waitingText = this.waitingTextGrp.getChildren().find(v => v.x > cross.x - 16 && v.x < cross.x + 16 && cross.y > this.height - 96);
+                waitingText.registeredGuest = guest;
+            }
         }
     }
 }
@@ -143,11 +194,16 @@ export function typeWriterHandler(infoObj) {
                 "Remember the guest can't stand on an unpainted x mark",
             ],
             "desc5": [
-                "The batteries help to charge the receptionist",
-                "robots, thus expediting the entry of guests.",
+                "Remember to continuously charge the batteries of the",
+                "Wilmer robot, our receptionist, in this way you will,",
+                "speed up the entry of guests.",
                 "Select the battery element with the mouse and",
                 "put them on the receptionist."
-            ],
+            ], "desc6": [
+                "Once this is done, the guest will only have to wait,",
+                "until he is registered to enter the hotel and that is",
+                "all, simple right?"
+            ]
         }
     ];
     this.gamePlay.infoTutorialIsTyping = true;
@@ -205,7 +261,8 @@ function placesAvailableOnTheLine() {
     });
 
     const firtsElement = crossesPosList.find(v => v.isBusyPlace === false);
-
+    if (!firtsElement)
+        return null;
     const availableCrosses = crossesPosList.filter(function (cross) {
         return cross.y === firtsElement.y && !cross.isBusyPlace;
     });
@@ -215,23 +272,28 @@ function placesAvailableOnTheLine() {
 
 function isThePlaceIsAvailable(cross) {
     const availableCrosses = placesAvailableOnTheLine.call(this);
+    if (!availableCrosses)
+        return false;
     const place = availableCrosses.find(v => v.name === cross.name);
     return place ? true : false;
 }
 
 export function findAplaceOnTheLine(guest) {
     const availableCrosses = placesAvailableOnTheLine.call(this);
+    if (!availableCrosses)
+        return false;
     const value = Phaser.Math.Between(0, availableCrosses.length - 1);
     const cross = this.crossesGrp.getChildren().find(v => v.name === availableCrosses[value].name);
     this.physics.moveToObject(guest, cross, 50);
+    return true;
 }
 // GUEST ACTION
 
 // SCENE ACTIONS
-function updateCrossesOnTheFloor(action) {
-    if (!action) {
+function updateCrossesOnTheFloor(update) {
+    if (!update) {
         let posX = 208;
-        let posY = this.height - 96;
+        let posY = this.height - 80;
         let crossIndex = 0;
         const timer = this.time.addEvent({
             delay: 100,
@@ -242,7 +304,7 @@ function updateCrossesOnTheFloor(action) {
                 cross.setDepth(1);
                 cross.setFrame(4);
                 cross.setName("cross-" + timer.getRepeatCount());
-                cross.footsteps = 0;
+                cross.footsteps = 4;
                 cross.isBusyPlace = false;
                 cross.body.setSize(16, 16)
                 this.crossesGrp.add(cross);
@@ -255,14 +317,6 @@ function updateCrossesOnTheFloor(action) {
                 }
             }.bind(this),
         });
-    } else if (action === "tutorial") {
-        const cross = this.physics.add.sprite(400, 356, "cross").setOrigin(.5).setInteractive({ cursor: "pointer" });;
-        cross.name = "cross-tutorial";
-        cross.setDepth(11);
-        cross.setFrame(2);
-        cross.footsteps = 2;
-        cross.body.setSize(16, 16);
-        this.crossesGrp.add(cross);
     }
 }
 
