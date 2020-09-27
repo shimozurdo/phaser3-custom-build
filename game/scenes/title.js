@@ -1,3 +1,5 @@
+import CONST from './const.js'
+
 const titleScene = new Phaser.Class({
     Extends: Phaser.Scene,
     initialize:
@@ -58,14 +60,7 @@ const titleScene = new Phaser.Class({
             duration: 2000,
             repeat: -1,
             yoyo: true
-        });
-
-        this.anims.create({
-            key: "fliying",
-            frames: this.anims.generateFrameNumbers("memok"),
-            frameRate: 10,
-            repeat: -1
-        });
+        });        
 
         const playBtn = this.add.sprite(this.width / 2, this.height / 2, "button").setOrigin(0.5).setInteractive({ cursor: "pointer" });;
         const playTxt = this.add.bitmapText(playBtn.x, playBtn.y - 10, "gem", "Play", 34).setOrigin(.5);
@@ -85,7 +80,7 @@ const titleScene = new Phaser.Class({
         }, this);
 
         this.memok = this.add.sprite(this.width / 2, this.height - 80, "memok").setOrigin(0.5);
-        this.memok.play("fliying");
+        this.memok.play(CONST.ANIM.FLY + "-memok");
 
         this.add.bitmapText(this.width / 2, this.height - 10, "gem", "A game by shimozurdo", 18).setOrigin(.5);
 

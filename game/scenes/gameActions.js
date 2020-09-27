@@ -1,3 +1,4 @@
+import CONST from './const.js'
 // UPDATE GAME PLAY
 export function uptateGameProgress() {
     //tutorial
@@ -42,7 +43,7 @@ export function uptateGameProgress() {
             const guest = this.physics.add.sprite(350, 300, "ada").setOrigin(.5).setInteractive({ cursor: "pointer" });;
             guest.name = "guest-tutorial";
             guest.setDepth(11);
-            guest.play("walking-ada");
+            guest.play(CONST.ANIM.WALK + "-ada");
 
             guest.body.setSize(24, 32);
             this.arrowDown.setPosition(guest.x, guest.y - 48);
@@ -108,7 +109,7 @@ export function overlapAreas(child, area) {
         child.setVelocity(0);
         if (child.registered === true) {
             child.registered = false;
-            
+
         }
     }
 }
@@ -228,13 +229,13 @@ export function typeWriterHandler(infoObj) {
 // GUEST ACTION
 export function spawnGuest(time) {
     const guestChose = Phaser.Math.Between(0, 1);
-    const guest = this.physics.add.sprite(368, 0, guestChose == 0 ? "ada" : "evan").setOrigin(.5).setInteractive({ cursor: "pointer" });;
+    const guest = this.physics.add.sprite(368, 0, guestChose == 0 ? "ada" : "evan").setOrigin(.5).setInteractive({ cursor: "pointer" });
     guest.name = "guest-" + parseInt((time / 1000));
     guest.isOverlaping = false;
     guest.throughACross = false;
     guest.isOnTheCross = false;
     guest.setDepth(2);
-    guest.play("walking-" + (guestChose == 0 ? "ada" : "evan"));
+    guest.play(CONST.ANIM.WALK + (guestChose == 0 ? "ada" : "evan"));
     guest.body.setSize(24, 32);
     this.guestsGrp.add(guest);
     return guest;
@@ -290,6 +291,16 @@ export function findAplaceOnTheLine(guest) {
 // GUEST ACTION
 
 // SCENE ACTIONS
+
+export function createAnimations(key, texture, frameRate, repeat) {
+    this.anims.create({
+        key: key,
+        frames: this.anims.generateFrameNumbers(texture),
+        frameRate: frameRate,
+        repeat: repeat
+    });
+}
+
 function updateCrossesOnTheFloor(update) {
     if (!update) {
         let posX = 208;

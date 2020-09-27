@@ -1,4 +1,5 @@
-import { uptateGameProgress, collideGuests, overlapAreas, overlapAPlaceInLine, showRules, typeWriterHandler, spawnGuest, findAplaceOnTheLine, moveMemok } from "./gameActions.js"
+import { createAnimations, uptateGameProgress, collideGuests, overlapAreas, overlapAPlaceInLine, showRules, typeWriterHandler, spawnGuest, findAplaceOnTheLine, moveMemok } from "./gameActions.js"
+import CONST from "./const.js"
 const gameScene = new Phaser.Class({
     Extends: Phaser.Scene,
     initialize:
@@ -21,6 +22,9 @@ const gameScene = new Phaser.Class({
             infoTutorialIsTyping: false
         }
         this.mouse = this.input.mousePointer;
+
+        //binding actions to thins scene
+        this.createAnimations = createAnimations.bind(this);
     },
     create: function () {
         // // MUSIC
@@ -28,129 +32,7 @@ const gameScene = new Phaser.Class({
         //     volume: .5,
         //     loop: true,
         // });
-        // // MUSIC
-
-        // ANIMATIONS
-        //It will improve
-
-        this.anims.create({
-            key: "walking-ada",
-            frames: this.anims.generateFrameNumbers("ada"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "walking-ada-mask",
-            frames: this.anims.generateFrameNumbers("ada-mask"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "walking-ada-sick",
-            frames: this.anims.generateFrameNumbers("ada-sick"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "walking-ada-sick-mask",
-            frames: this.anims.generateFrameNumbers("ada-sick-mask"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "walking-evan",
-            frames: this.anims.generateFrameNumbers("evan"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "walking-evan-mask",
-            frames: this.anims.generateFrameNumbers("evan-mask"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "walking-evan-sick",
-            frames: this.anims.generateFrameNumbers("evan-sick"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "walking-evan-sick-mask",
-            frames: this.anims.generateFrameNumbers("evan-sick-mask"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "fliying",
-            frames: this.anims.generateFrameNumbers("memok"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "idle",
-            frames: this.anims.generateFrameNumbers("wilmer"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "blinking",
-            frames: this.anims.generateFrameNumbers("more-text"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "blinking-info",
-            frames: this.anims.generateFrameNumbers("help-alert"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "blinking-warning",
-            frames: this.anims.generateFrameNumbers("warning"),
-            frameRate: 8
-        });
-
-        this.anims.create({
-            key: "blinking-selected-item",
-            frames: this.anims.generateFrameNumbers("selected-item"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "blinking-selected-guest",
-            frames: this.anims.generateFrameNumbers("selected-guest"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "blinking-arrow-down",
-            frames: this.anims.generateFrameNumbers("arrow-down"),
-            frameRate: 4,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: "waiting-gears",
-            frames: this.anims.generateFrameNumbers("gears"),
-            frameRate: 4,
-            repeat: -1
-        });
-        // ANIMATIONS
+        // // MUSIC        
 
         // GROUPS
         const itemsBtnGroupNamesList = ['bucket', 'mask', 'hand', 'battery'];
@@ -188,7 +70,6 @@ const gameScene = new Phaser.Class({
         this.sizeRTB = 56;
 
         for (let i = 0; i < itemsBtnGroupNamesList.length; i++) {
-
             let posY = 32;
             let rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, (i === 0 ? posY : posY + (i * 64)) + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
             rechargeTimeBar.setDepth(4);
@@ -197,7 +78,6 @@ const gameScene = new Phaser.Class({
             rechargeTimeBar.delay = 10000;
             rechargeTimeBar.delayConst = 10000;
             this.rechargeTimeBarGrp.add(rechargeTimeBar);
-
         }
 
         areaGrpNamesList.forEach(element => {
@@ -210,24 +90,24 @@ const gameScene = new Phaser.Class({
         // graphic indicators
         this.selectedItem = this.add.sprite(-100, -100, "selected-item").setOrigin(.5);
         this.selectedItem.setDepth(4);
-        this.selectedItem.play("blinking-selected-item");
+        this.selectedItem.play(CONST.ANIM.BLINK + "-selected-item");
 
         this.selectedCross = this.add.sprite(-100, -100, "selected-item").setOrigin(.5);
         this.selectedCross.setDepth(1);
-        this.selectedCross.play("blinking-selected-item");
+        this.selectedCross.play(CONST.ANIM.BLINK + "-selected-item");
         this.selectedCross.setScale(.7);
 
         this.selectedGuest = this.add.sprite(-100, -100, "selected-guest").setOrigin(.5);
         this.selectedGuest.setDepth(1);
-        this.selectedGuest.play("blinking-selected-guest");
+        this.selectedGuest.play(CONST.ANIM.BLINK + "-selected-guest");
 
         this.arrowDown = this.add.sprite(-100, -100, "arrow-down").setOrigin(.5);
         this.arrowDown.setDepth(11);
-        this.arrowDown.play("blinking-arrow-down");
+        this.arrowDown.play(CONST.ANIM.BLINK + "-arrow-down");
 
         this.arrowRight = this.add.sprite(-100, -100, "arrow-down").setOrigin(0.5);
         this.arrowRight.setDepth(11);
-        this.arrowRight.play("blinking-arrow-down");
+        this.arrowRight.play(CONST.ANIM.BLINK + "-arrow-down");
         this.arrowRight.angle = -90;
 
         const block = this.physics.add.image(144, 384, "").setOrigin(0);
@@ -240,7 +120,7 @@ const gameScene = new Phaser.Class({
 
         // GAME OBJECTS
         this.memok = this.physics.add.sprite(this.width / 2, this.height / 2, "memok").setOrigin(0.5);
-        this.memok.play("fliying");
+        this.memok.play(CONST.ANIM.FLY + "-memok");
         this.memok.setDepth(9);
 
         this.warningIcon = this.add.sprite(this.memok.x, this.memok.y - 32, "warning").setOrigin(0.5);
@@ -264,12 +144,12 @@ const gameScene = new Phaser.Class({
         let item = this.add.sprite(this.manager.x, this.manager.y - 48, "help-alert").setOrigin(0.5);
         item.name = "helpAlertBtn";
         item.visible = false;
-        item.play("blinking-info");
+        item.play(CONST.ANIM.BLINK + "-help-alert");
         this.itemsBtnGroup.add(item);
 
-        item = this.add.sprite(624, this.manager2.y + 32, "more-text").setOrigin(0.5).setInteractive({ cursor: "pointer" });
+        item = this.add.sprite(624, this.manager2.y + 32, "show-more-text").setOrigin(0.5).setInteractive({ cursor: "pointer" });
         item.name = "showMoreInfoBtn";
-        item.play("blinking");
+        item.play(CONST.ANIM.BLINK + "-show-more-text");
         item.visible = false;
         item.setDepth(10);
         this.itemsBtnGroup.add(item);
@@ -284,7 +164,7 @@ const gameScene = new Phaser.Class({
         for (let i = 0; i < 5; i++) {
             const wilmer = this.add.sprite(posWilmerX - 16, this.height - 30, "wilmer").setInteractive({ cursor: "pointer" });
             wilmer.name = "wilmer-" + i;
-            wilmer.anims.play("idle");
+            wilmer.anims.play(CONST.ANIM.IDLE + "-wilmer");
             this.wilmersGrp.add(wilmer);
             posWilmerX += 96;
 
@@ -301,7 +181,7 @@ const gameScene = new Phaser.Class({
             waitingGear.setScale(.5);
             waitingGear.setDepth(5);
             waitingGear.name = "waitingGear-" + i;
-            waitingGear.play("waiting-gears");
+            waitingGear.play(CONST.ANIM.WAIT + "-arrow-gears");
             waitingGear.visible = false;
             this.waitingGearGrp.add(waitingGear);
 
@@ -334,7 +214,7 @@ const gameScene = new Phaser.Class({
             if (child.name === "helpAlertBtn")
                 showRules.call(this, true);
             else if (child.name === "closeModalBtn") {
-                this.warningIcon.play("blinking-warning");
+                this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
                 this.gamePlay.stepTutorialModal = 1;
                 showRules.call(this, false);
                 if (!this.gamePlay.gameStart) {
@@ -349,7 +229,7 @@ const gameScene = new Phaser.Class({
                 }
             }
             else if (child.name === "showMoreInfoBtn" && !this.gamePlay.infoTutorialIsTyping) {
-                this.warningIcon.play("blinking-warning");
+                this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
                 showRules.call(this, true);
                 this.gamePlay.stepTutorialModal++;
                 uptateGameProgress.call(this);
@@ -455,7 +335,7 @@ const gameScene = new Phaser.Class({
                 const guest = spawnGuest.call(this, time);
                 guest.name = "guest-" + parseInt((time / 1000));
                 this.warningIcon.setFrame(0);
-                this.warningIcon.play("blinking-warning");
+                this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
                 findAplaceOnTheLine.call(this, guest);
             }
 

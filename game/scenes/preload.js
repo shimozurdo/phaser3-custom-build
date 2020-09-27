@@ -1,3 +1,6 @@
+import { createAnimations } from "./gameActions.js"
+import CONST from './const.js'
+
 const preloadScene = new Phaser.Class({
 
     Extends: Phaser.Scene,
@@ -26,7 +29,7 @@ const preloadScene = new Phaser.Class({
         this.load.image("close", "assets/close.png");
         this.load.image("battery", "assets/battery.png");
         // sprite sheets
-        this.load.spritesheet("more-text", "assets/more-text.png", { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet("show-more-text", "assets/show-more-text.png", { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet("cross", "assets/cross.png", { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet("help-alert", "assets/help-alert.png", { frameWidth: 64, frameHeight: 32 });
         this.load.spritesheet("memok", "assets/memok.png", { frameWidth: 48, frameHeight: 64 });
@@ -116,16 +119,45 @@ const preloadScene = new Phaser.Class({
             //     volume: .5,
             //     loop: true,
             //     delay: 0
-            // });
-            this.time.addEvent({
-                delay: 2000,
-                callback: function () {
-                    this.scene.stop("preload");
-                    this.scene.start("gameScene");
-                }.bind(this),
-                loop: false
-            });
+            // });            
         }, this);
+
+        //binding actions to thins scene
+        this.createAnimations = createAnimations.bind(this);
+    },
+    create: function () {
+
+        // ANIMATIONS       
+        this.createAnimations(CONST.ANIM.WALK + "-ada", "ada", 4, -1);
+        this.createAnimations(CONST.ANIM.WALK + "-ada-mask", "ada-mask", 4, -1);
+        this.createAnimations(CONST.ANIM.WALK + "-ada-sick", "ada-sick", 4, -1);
+        this.createAnimations(CONST.ANIM.WALK + "-ada-sick", "-ada-sick", 4, -1);
+        this.createAnimations(CONST.ANIM.WALK + "-ada-sick-mask", "ada-sick-mask", 4, -1);
+        this.createAnimations(CONST.ANIM.WALK + "-evan", "evan", 4, -1);
+        this.createAnimations(CONST.ANIM.WALK + "-evan-mask", "evan-mask", 4, -1);
+        this.createAnimations(CONST.ANIM.WALK + "-evan-sick", "evan-sick", 4, -1);
+        this.createAnimations(CONST.ANIM.WALK + "-evan-sick", "-evan-sick", 4, -1);
+        this.createAnimations(CONST.ANIM.WALK + "-evan-sick-mask", "evan-sick-mask", 4, -1);
+        this.createAnimations(CONST.ANIM.FLY + "-memok", "memok", 4, -1);
+        this.createAnimations(CONST.ANIM.IDLE + "-wilmer", "wilmer", 4, -1);
+        this.createAnimations(CONST.ANIM.BLINK + "-show-more-text", "show-more-text", 4, -1);
+        this.createAnimations(CONST.ANIM.BLINK + "-help-alert", "help-alert", 4, -1);
+        this.createAnimations(CONST.ANIM.BLINK + "-selected-item", "selected-item", 4, -1);
+        this.createAnimations(CONST.ANIM.BLINK + "-selected-guest", "selected-guest", 4, -1);
+        this.createAnimations(CONST.ANIM.BLINK + "-arrow-down", "arrow-down", 4, -1);
+        this.createAnimations(CONST.ANIM.BLINK + "-warning", "warning", 4, 1);
+        this.createAnimations(CONST.ANIM.WAIT + "-arrow-gears", "gears", 4, -1);
+        // ANIMATIONS
+
+        this.time.addEvent({
+            delay: 2000,
+            callback: function () {
+                this.scene.stop("preload");
+                this.scene.start("gameScene");
+            }.bind(this),
+            loop: false
+        });
+
     }
 });
 
