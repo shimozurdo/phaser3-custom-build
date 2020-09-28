@@ -14,40 +14,52 @@ function uptateGameProgress() {
 
         this.selectedItem.name = null;
         this.selectedItem.setDepth(11);
+        this.selectedCross.setPosition(-100, -100);
+        this.selectedItem.setPosition(-100, -100);
+
+        this.arrowDown.visible = true;
+        this.arrowRight.visible = true;
 
         if (this.gamePlay.stepTutorialModal === 2) {
 
             itemBucketBtn.setDepth(11);
-            this.arrowDown.setPosition(400, 308);
-            this.arrowDown.setScale(1.5)
             this.arrowRight.setPosition(704, 64);
-            const cross = this.physics.add.sprite(400, 368, "cross").setOrigin(.5).setInteractive({ cursor: "pointer" });;
-            cross.name = "cross-tutorial";
-            cross.setDepth(11);
-            cross.setFrame(2);
-            cross.footsteps = 2;
-            cross.body.setSize(16, 16);
-            this.crossesGrp.add(cross);
+            this.arrowDown.setPosition(-100, -100);
+
+            if (this.firstTimeTutorial) {
+
+                this.arrowDown.setPosition(400, 308);
+                this.arrowDown.setScale(1.5);
+                const cross = this.physics.add.sprite(400, 368, "cross").setOrigin(.5).setInteractive({ cursor: "pointer" });;
+                cross.name = "cross-tutorial";
+                cross.setDepth(11);
+                cross.setFrame(2);
+                cross.footsteps = 2;
+                cross.body.setSize(16, 16);
+                this.crossesGrp.add(cross);
+
+            }
 
         } else if (this.gamePlay.stepTutorialModal === 3) {
 
-            updateCrossesOnTheFloor.call(this);
             itemBucketBtn.setDepth(1);
             itemMaskBtn.setDepth(11);
 
             this.arrowRight.setPosition(this.arrowRight.x, this.arrowRight.y + 64);
-            this.selectedCross.setPosition(-100, -100);
-            this.selectedItem.setPosition(-100, -100);
 
-            const guest = this.physics.add.sprite(350, 300, "ada").setOrigin(.5).setInteractive({ cursor: "pointer" });;
-            guest.name = "guest-tutorial";
-            guest.status = CONST.GUEST_STATUS.OK;
-            guest.setDepth(11);
-            guest.play(CONST.ANIM.WALK + "-ada");
+            if (this.firstTimeTutorial) {
+                updateCrossesOnTheFloor.call(this);
+                const guest = this.physics.add.sprite(350, 300, "ada").setOrigin(.5).setInteractive({ cursor: "pointer" });;
+                guest.name = "guest-tutorial";
+                guest.status = CONST.GUEST_STATUS.OK;
+                guest.setDepth(11);
+                guest.play(CONST.ANIM.WALK + "-ada");
 
-            guest.body.setSize(24, 32);
-            this.arrowDown.setPosition(guest.x, guest.y - 48);
-            this.guestsGrp.add(guest);
+                guest.body.setSize(24, 32);
+                this.arrowDown.setPosition(guest.x, guest.y - 48);
+                this.guestsGrp.add(guest);
+
+            }
 
         } else if (this.gamePlay.stepTutorialModal === 4) {
 
@@ -62,32 +74,42 @@ function uptateGameProgress() {
             itemHandBtn.setDepth(1);
             itemBaterryBtn.setDepth(11);
             this.arrowRight.setPosition(this.arrowRight.x, this.arrowRight.y + 64);
-            const wilmer = this.wilmersGrp.getChildren().find(v => v.name === "wilmer-2");
-            const liveBarWilmer = this.liveBarWilmerGrp.getChildren().find(v => v.name === "liveBarWilmer-2");
-            liveBarWilmer.setDepth(11);
-            wilmer.setDepth(11);
-            this.arrowDown.setPosition(wilmer.x + 30, wilmer.y - 50);
-            this.arrowDown.angle = 25;
-            const guest = this.guestsGrp.getChildren().find(v => v.name === "guest-tutorial");
-            if (!guest.isOverlaping) {
-                guest.status = CONST.GUEST_STATUS.WAITING;
-                const cross = this.crossesGrp.getChildren().find(v => v.name === "cross-tutorial");
-                guest.setPosition(cross.x, cross.y);
+
+            if (this.firstTimeTutorial) {
+
+                const wilmer = this.wilmersGrp.getChildren().find(v => v.name === "wilmer-2");
+                const liveBarWilmer = this.liveBarWilmerGrp.getChildren().find(v => v.name === "liveBarWilmer-2");
+                liveBarWilmer.setDepth(11);
+                wilmer.setDepth(11);
+                this.arrowDown.setPosition(wilmer.x + 30, wilmer.y - 50);
+                this.arrowDown.angle = 25;
+                const guest = this.guestsGrp.getChildren().find(v => v.name === "guest-tutorial");
+                if (guest.status !== CONST.GUEST_STATUS.WAITING) {
+                    guest.status = CONST.GUEST_STATUS.WAITING;
+                    const cross = this.crossesGrp.getChildren().find(v => v.name === "cross-tutorial");
+                    guest.setPosition(cross.x, cross.y);
+                }
+
             }
 
         } else if (this.gamePlay.stepTutorialModal === 6) {
+            this.arrowDown.setPosition(-100, -100);
+            if (this.firstTimeTutorial) {
 
-            const waitingText = this.waitingTextGrp.getChildren().find(v => v.name === "waitingText-2");
-            waitingText.setDepth(12);
-            waitingText.visible = true;
-            waitingText.delay = 2000;
-            waitingText.delayConst = 2000;
-            const waitingGear = this.waitingGearGrp.getChildren().find(v => v.name === "waitingGear-2");
-            waitingGear.setDepth(12);
-            waitingGear.visible = true;
+                const waitingText = this.waitingTextGrp.getChildren().find(v => v.name === "waitingText-2");
+                waitingText.setDepth(12);
+                waitingText.visible = true;
+                waitingText.delay = 2000;
+                waitingText.delayConst = 2000;
 
-            const guest = this.guestsGrp.getChildren().find(v => v.name === "guest-tutorial");
-            waitingText.registeredGuest = guest;
+                const waitingGear = this.waitingGearGrp.getChildren().find(v => v.name === "waitingGear-2");
+                waitingGear.setDepth(12);
+                waitingGear.visible = true;
+
+                const guest = this.guestsGrp.getChildren().find(v => v.name === "guest-tutorial");
+                waitingText.registeredGuest = guest;
+            } else
+                this.arrowRight.setPosition(-100, -100);
 
         }
     }
@@ -96,7 +118,7 @@ function uptateGameProgress() {
 // UPDATE GAME PLAY
 
 // CAll BACK COLLISION
-function collideGuests(guest1, guest2) {
+function overlapGuests(guest1, guest2) {
     guest1.setVelocity(0);
     guest2.setVelocity(0);
 }
@@ -108,7 +130,7 @@ function overlapAreas(child, area) {
         child.y < area.y + 8) {
         child.setVelocity(0);
         if (child.status !== CONST.GUEST_STATUS.REGISTERED) {
-            child.status = CONST.GUEST_STATUS.REGISTERED;            
+            child.status = CONST.GUEST_STATUS.REGISTERED;
         }
     }
 }
@@ -142,30 +164,74 @@ function overlapAPlaceInLine(guest, cross) {
                 let waitingText = this.waitingTextGrp.getChildren().find(v => v.x > cross.x - 16 && v.x < cross.x + 16 && cross.y > this.height - 96);
                 waitingText.registeredGuest = guest;
             }
+
         }
     }
 }
 // CAll BACK COLLISION
 
 // RULES
-function showRules(showMainText) {
-    this.textLayer.visible = showMainText;
-    this.infoMainTxt.visible = showMainText;
-    this.rectBackground.visible = showMainText;
-    this.helpAlerTxt.visible = !showMainText;
-    this.manager.visible = !showMainText;
-    this.manager2.visible = showMainText;
+function showModalInfo(showTutorial) {
+
+    this.textLayer.visible = showTutorial;
+    this.infoMainTxt.visible = showTutorial;
+    this.rectBackground.visible = showTutorial;
+    this.helpAlerTxt.visible = !showTutorial;
+    this.manager.visible = !showTutorial;
+    this.manager2.visible = showTutorial;
 
     this.itemsBtnGroup.children.each(function (child) {
         if (child.name === "closeModalBtn" || child.name === "showMoreInfoBtn") {
-            child.visible = showMainText;
+            child.visible = showTutorial;
             child.setDepth(10);
         }
         else if (child.name === "helpAlertBtn") {
-            child.visible = !showMainText;
+            child.visible = !showTutorial;
             child.setDepth(1);
         }
     });
+
+    if (showTutorial) {
+        this.gamePlay.pause = CONST.PAUSE.BY_TUTORIAL;
+        if (!this.firstTimeTutorial)
+            this.physics.pause();
+    }
+    else if (!showTutorial) {
+
+        this.gamePlay.pause = CONST.PAUSE.FALSE;
+        if (!this.firstTimeTutorial)
+            this.physics.resume();
+
+        this.firstTimeTutorial = false;
+        this.selectedItem.name = null;
+        this.selectedItem.setDepth(4);
+        this.selectedItem.touchedItem = null;
+        this.arrowDown.visible = false;
+        this.arrowRight.visible = false;
+        let guest = this.guestsGrp.getChildren().find(v => v.name === "guest-tutorial");
+        this.guestsGrp.remove(guest, true, true);
+
+        this.itemsBtnGroup.children.each(child => {
+            child.setDepth(4);
+        });
+
+        let cross = this.crossesGrp.getChildren().find(v => v.name === "cross-tutorial");
+        this.guestsGrp.remove(cross, true, true);
+
+        const waitingText = this.waitingTextGrp.getChildren().find(v => v.name === "waitingText-2");
+        waitingText.registeredGuest = null;
+        waitingText.setDepth(5);
+
+        const liveBarWilmer = this.liveBarWilmerGrp.getChildren().find(v => v.name === "liveBarWilmer-2");
+        liveBarWilmer.setDepth(5);
+
+        const waitingGear = this.waitingGearGrp.getChildren().find(v => v.name === "waitingGear-2");
+        waitingGear.setDepth(5);
+
+        this.gamePlay.stepTutorialModal = -1;
+
+    }
+
 }
 
 function typeWriterHandler(data) {
@@ -177,12 +243,12 @@ function typeWriterHandler(data) {
         delay: 250,
         loop: false,
         repeat: data.arrayText.length - 1,
-        callback: function () {
+        callback: () => {
             data.textObj.text += data.arrayText[index] + "\n";
             index++;
             if (time.getRepeatCount() <= 0)
                 this.gamePlay.infoTutorialIsTyping = false;
-        }.bind(this),
+        },
     });
 
 }
@@ -253,7 +319,6 @@ function findAplaceOnTheLine(guest) {
 // GUEST ACTION
 
 // SCENE ACTIONS
-
 function createAnimations(key, texture, frameRate, repeat) {
     this.anims.create({
         key: key,
@@ -272,7 +337,7 @@ function updateCrossesOnTheFloor(update) {
             delay: 100,
             loop: false,
             repeat: 14,
-            callback: function () {
+            callback: () => {
                 const cross = this.physics.add.sprite(posX, posY, "cross").setOrigin(.5).setInteractive({ cursor: "pointer" });;
                 cross.setDepth(1);
                 cross.setFrame(4);
@@ -288,7 +353,7 @@ function updateCrossesOnTheFloor(update) {
                     posY -= 96;
                     posX = 208;
                 }
-            }.bind(this),
+            },
         });
     }
 }
@@ -303,7 +368,7 @@ function moveMemok(coordinates) {
 }
 
 function resetGamePlay() {
-    this.gamePlay = {
+    return {
         delayGeneral: 500,
         level: 1,
         score: 0,
@@ -313,7 +378,8 @@ function resetGamePlay() {
         stepTutorialModal: -1,
         gameOver: false,
         gameStart: false,
-        infoTutorialIsTyping: false
+        infoTutorialIsTyping: false,
+        pause: 0
     }
 }
 // SCENE ACTIONS
@@ -324,10 +390,10 @@ export {
     findAplaceOnTheLine,
     spawnGuest,
     typeWriterHandler,
-    showRules,
+    showModalInfo,
     overlapAPlaceInLine,
     overlapAreas,
-    collideGuests,
+    overlapGuests,
     uptateGameProgress,
     resetGamePlay
 }

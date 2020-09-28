@@ -7,9 +7,10 @@ const gameScene = new Phaser.Class({
             Phaser.Scene.call(this, "gameScene");
         },
     preload: function () {
+
         // binding actions to thins scene
         this.createAnimations = action.createAnimations.bind(this);
-        this.showRules = action.showRules.bind(this);
+        this.showModalInfo = action.showModalInfo.bind(this);
         this.typeWriterHandler = action.typeWriterHandler.bind(this);
         this.uptateGameProgress = action.uptateGameProgress.bind(this);
         this.findAplaceOnTheLine = action.findAplaceOnTheLine.bind(this);
@@ -21,8 +22,10 @@ const gameScene = new Phaser.Class({
         this.width = this.cameras.main.width;
         this.height = this.cameras.main.height;
         this.mouse = this.input.mousePointer;
-        this.gamePlay = null;
-        this.resetGamePlay();
+        this.gamePlay = this.resetGamePlay();
+
+        // tutorial has been showed for first time
+        this.firstTimeTutorial = true;
     },
     create: function () {
         // // MUSIC
@@ -70,7 +73,7 @@ const gameScene = new Phaser.Class({
         for (let i = 0; i < itemsBtnGroupNamesList.length; i++) {
             let posY = 32;
             let rechargeTimeBar = this.add.rectangle(this.width - 64 + surplus, (i === 0 ? posY : posY + (i * 64)) + surplus, this.sizeRTB, this.sizeRTB, 0x000).setOrigin(0);
-            rechargeTimeBar.setDepth(4);
+            rechargeTimeBar.setDepth(5);
             rechargeTimeBar.name = itemsBtnGroupNamesList[i] + "RTB";
             rechargeTimeBar.alpha = 0.7;
             rechargeTimeBar.delay = 10000;
@@ -140,10 +143,11 @@ const gameScene = new Phaser.Class({
             this.itemsBtnGroup.add(item);
         }
 
-        let item = this.add.sprite(this.manager.x, this.manager.y - 48, "help-alert").setOrigin(0.5);
+        let item = this.add.sprite(this.manager.x, this.manager.y - 48, "help-alert").setOrigin(0.5).setInteractive({ cursor: "pointer" });
         item.name = "helpAlertBtn";
         item.visible = false;
         item.play(CONST.ANIM.BLINK + "-help-alert");
+        item.setDepth(2);
         this.itemsBtnGroup.add(item);
 
         item = this.add.sprite(624, this.manager2.y + 32, "show-more-text").setOrigin(0.5).setInteractive({ cursor: "pointer" });
@@ -181,7 +185,7 @@ const gameScene = new Phaser.Class({
             waitingGear.setDepth(5);
             waitingGear.name = "waitingGear-" + i;
             waitingGear.play(CONST.ANIM.WAIT + "-arrow-gears");
-            waitingGear.visible = true;
+            waitingGear.visible = false;
             this.waitingGearGrp.add(waitingGear);
 
             let waitingText = this.add.bitmapText(wilmer.x, this.height - 64, "gem", "0", 15).setOrigin(.5);
@@ -191,9 +195,10 @@ const gameScene = new Phaser.Class({
             this.waitingTextGrp.add(waitingText);
         }
 
-        this.helpAlerTxt = this.add.bitmapText(this.width - 30, this.height - 80, "gem", "INFO!", 14).setOrigin(0.5);
+        this.helpAlerTxt = this.add.bitmapText(this.width - 30, this.height - 80, "gem", "HELP", 14).setOrigin(0.5);
         this.helpAlerTxt.setTint(0x000);
         this.helpAlerTxt.visible = false;
+        this.helpAlerTxt.setDepth(4)
 
         this.infoMainTxt = this.add.bitmapText(this.manager2.x + 32, this.manager2.y - 40, "gem", "", 16);
         this.infoMainTxt.visible = false;
@@ -201,7 +206,7 @@ const gameScene = new Phaser.Class({
         // GAME OBJECTS
 
         //  COLLISIONS
-        this.physics.add.collider(this.guestsGrp, this.guestsGrp, action.collideGuests, null, this);
+        this.physics.add.overlap(this.guestsGrp, this.guestsGrp, action.overlapGuests, null, this);
         this.physics.add.overlap(this.guestsGrp, this.crossesGrp, action.overlapAPlaceInLine, null, this);
         this.physics.add.overlap(this.memok, this.areaGrp, action.overlapAreas, null, this);
         this.physics.add.overlap(this.guestsGrp, this.areaGrp, action.overlapAreas, null, this);
@@ -209,30 +214,49 @@ const gameScene = new Phaser.Class({
         //  COLLISIONS
 
         // EVENTS
-        this.input.on('gameobjectdown', function (pointer, child) {
-            if (child.name === "helpAlertBtn")
-                this.showRules(true);
-            else if (child.name === "closeModalBtn") {
-                this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
+        this.input.on('gameobjectdown', (pointer, child) => {
+            if (child.name === "helpAlertBtn") {
                 this.gamePlay.stepTutorialModal = 1;
-                this.showRules(false);
+                this.showModalInfo(true);
+                this.typeWriterHandler({ arrayText: CONST.TUTORIAL.RULES[this.gamePlay.stepTutorialModal], textObj: this.infoMainTxt });
+            }
+            else if (child.name === "closeModalBtn") {
+                this.gamePlay.stepTutorialModal = -1;
+                this.showModalInfo(false);
                 if (!this.gamePlay.gameStart) {
+                    this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
                     this.time.addEvent({
                         delay: this.gamePlay.delayGeneral,
-                        callback: function () {
+                        callback: () => {
                             this.gamePlay.gameStart = true;
                             this.moveMemok();
-                        }.bind(this),
+                        },
                         loop: false
                     });
                 }
             }
             else if (child.name === "showMoreInfoBtn" && !this.gamePlay.infoTutorialIsTyping) {
-                this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
-                this.showRules(true);
-                this.gamePlay.stepTutorialModal++;
-                this.uptateGameProgress();
-                this.typeWriterHandler({ arrayText: CONST.TUTORIAL.RULES[this.gamePlay.stepTutorialModal], textObj: this.infoMainTxt });
+                if (this.gamePlay.stepTutorialModal < CONST.TUTORIAL_COMPLETED) {
+                    this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
+                    this.showModalInfo(true);
+                    this.gamePlay.stepTutorialModal++;
+                    this.uptateGameProgress();
+                    this.typeWriterHandler({ arrayText: CONST.TUTORIAL.RULES[this.gamePlay.stepTutorialModal], textObj: this.infoMainTxt });
+                } else {
+                    this.gamePlay.stepTutorialModal = -1;
+                    this.showModalInfo(false);
+                    if (!this.gamePlay.gameStart) {
+                        this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
+                        this.time.addEvent({
+                            delay: this.gamePlay.delayGeneral,
+                            callback: () => {
+                                this.gamePlay.gameStart = true;
+                                this.moveMemok();
+                            },
+                            loop: false
+                        });
+                    }
+                }
             }
             else if (child.name === "bucketBtn" && (this.gamePlay.stepTutorialModal === 2 || this.gamePlay.stepTutorialModal === -1)) {
                 this.selectedItem.setPosition(child.x, child.y);
@@ -271,55 +295,55 @@ const gameScene = new Phaser.Class({
                 const liveBarWilmer = this.liveBarWilmerGrp.getChildren().find(v => v.name === "liveBarWilmer-" + child.name.split("-")[1]);
                 liveBarWilmer.height = 16;
             }
-        }, this);
+        });
 
-        this.input.on('pointerover', function (pointer, children) {
+        this.input.on('pointerover', (pointer, children) => {
             if (this.selectedItem.name === "bucketBtn" || (this.selectedItem.name === "handBtn" && this.selectedGuest.x > 0))
-                children.forEach(function (child) {
+                children.forEach((child) => {
                     if (child.name.includes("cross") && child.footsteps < 4)
                         this.selectedCross.setPosition(child.x, child.y);
                     if (this.gamePlay.stepTutorialModal > 0)
                         this.selectedCross.setDepth(11);
-                }, this);
+                });
             if (this.selectedItem.name === "maskBtn" || this.selectedItem.name === "handBtn")
-                children.forEach(function (child) {
+                children.forEach((child) => {
                     if (child.name.includes("guest")) {
                         this.selectedGuest.setPosition(child.x, child.y);
                         this.selectedGuest.child = child;
                         if (this.gamePlay.stepTutorialModal > 0)
                             this.selectedGuest.setDepth(11);
                     }
-                }, this);
+                });
             if (this.selectedItem.name === "batteryBtn")
-                children.forEach(function (child) {
+                children.forEach((child) => {
                     if (child.name.includes("wilmer")) {
                         this.selectedGuest.setPosition(child.x, child.y);
                         if (this.gamePlay.stepTutorialModal > 0)
                             this.selectedGuest.setDepth(11);
                     }
-                }, this);
-        }, this);
+                });
+        });
 
-        this.input.on('pointerout', function (pointer, children) {
+        this.input.on('pointerout', (pointer, children) => {
             this.selectedCross.setPosition(-100, -100);
             this.selectedCross.setDepth(1);
             if (this.selectedItem.name !== "handBtn" || (this.selectedItem.name === "handBtn" && !this.selectedItem.touchedItem)) {
                 this.selectedGuest.setPosition(-100, -100);
                 this.selectedGuest.setDepth(1);
             }
-        }, this);
+        });
 
         // EVENTS
 
         // START GAME
         this.time.addEvent({
             delay: this.gamePlay.delayGeneral,
-            callback: function () {
+            callback: () => {
                 this.gamePlay.stepTutorialModal = 1;
-                this.showRules(true);
+                this.showModalInfo(true);
                 this.typeWriterHandler({ arrayText: CONST.TUTORIAL.RULES[this.gamePlay.stepTutorialModal], textObj: this.infoMainTxt });
                 this.warningIcon.setFrame(0);
-            }.bind(this),
+            },
             loop: false
         });
         // START GAME
@@ -327,7 +351,7 @@ const gameScene = new Phaser.Class({
     update: function (time, delta) {
 
         //GAME LOOP
-        if (!this.gamePlay.gameOver && this.gamePlay.gameStart) {
+        if (!this.gamePlay.gameOver && this.gamePlay.gameStart && this.gamePlay.pause === CONST.PAUSE.FALSE) {
 
             this.gamePlay.delaySpawnGuest -= delta;
             if (this.gamePlay.delaySpawnGuest < 0) {
@@ -361,6 +385,7 @@ const gameScene = new Phaser.Class({
             this.warningIcon.setPosition(this.memok.x, this.memok.y - 32);
             // pinned sprites   
         }
+
         if (this.selectedItem.name === "handBtn" && this.selectedGuest.x > 0 && this.selectedGuest.child)
             this.selectedGuest.setPosition(this.selectedGuest.child.x, this.selectedGuest.child.y);
 
@@ -381,7 +406,7 @@ const gameScene = new Phaser.Class({
                     child.text = parseInt(child.delay / 1000);
                 }
             }
-        }, this);
+        });
 
         this.graphics.clear();
         if (this.selectedGuest.x > 0 && this.selectedItem.name === "handBtn" && this.selectedItem.touchedItem) {
