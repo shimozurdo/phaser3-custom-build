@@ -17,6 +17,7 @@ const gameScene = new Phaser.Class({
         this.moveMemok = action.moveMemok.bind(this);
         this.spawnGuest = action.spawnGuest.bind(this);
         this.resetGamePlay = action.resetGamePlay.bind(this);
+        this.updateCrossesOnTheFloor = action.updateCrossesOnTheFloor.bind(this);
 
         // game config
         this.width = this.cameras.main.width;
@@ -88,7 +89,7 @@ const gameScene = new Phaser.Class({
             this.areaGrp.add(area);
         });
 
-        // graphic indicators
+        /// graphic indicators
         this.selectedItem = this.add.sprite(-100, -100, "selected-item").setOrigin(.5);
         this.selectedItem.setDepth(4);
         this.selectedItem.play(CONST.ANIM.BLINK + "-selected-item");
@@ -111,13 +112,9 @@ const gameScene = new Phaser.Class({
         this.arrowRight.play(CONST.ANIM.BLINK + "-arrow-down");
         this.arrowRight.angle = -90;
 
-        const block = this.physics.add.image(144, 384, "").setOrigin(0);
-        block.scaleX = 15;
-        block.visible = false;
-        block.staticBody = true;
-
         this.graphics = this.add.graphics({ lineStyle: { width: 2, color: 0x00D998 } });
         this.moveToLine = new Phaser.Geom.Line(0, 0, 0, 0);
+        /// graphic indicators
         // BACKGROUND
 
         // GAME OBJECTS
@@ -210,7 +207,6 @@ const gameScene = new Phaser.Class({
         this.physics.add.overlap(this.guestsGrp, this.crossesGrp, action.overlapAPlaceInLine, null, this);
         this.physics.add.overlap(this.memok, this.areaGrp, action.overlapAreas, null, this);
         this.physics.add.overlap(this.guestsGrp, this.areaGrp, action.overlapAreas, null, this);
-        this.physics.add.collider(this.guestsGrp, block);
         //  COLLISIONS
 
         // EVENTS
@@ -225,14 +221,9 @@ const gameScene = new Phaser.Class({
                 this.showModalInfo(false);
                 if (!this.gamePlay.gameStart) {
                     this.warningIcon.play(CONST.ANIM.BLINK + "-warning");
-                    this.time.addEvent({
-                        delay: this.gamePlay.delayGeneral,
-                        callback: () => {
-                            this.gamePlay.gameStart = true;
-                            this.moveMemok();
-                        },
-                        loop: false
-                    });
+                    this.updateCrossesOnTheFloor();
+                    this.gamePlay.gameStart = true;
+                    this.moveMemok();
                 }
             }
             else if (child.name === "showMoreInfoBtn" && !this.gamePlay.infoTutorialIsTyping) {

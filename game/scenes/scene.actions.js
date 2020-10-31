@@ -30,14 +30,13 @@ function uptateGameProgress() {
 
                 this.arrowDown.setPosition(400, 308);
                 this.arrowDown.setScale(1.5);
-                const cross = this.physics.add.sprite(400, 368, "cross").setOrigin(.5).setInteractive({ cursor: "pointer" });;
+                const cross = this.physics.add.sprite(403, 370, "cross").setOrigin(.5).setInteractive({ cursor: "pointer" });
                 cross.name = "cross-tutorial";
                 cross.setDepth(11);
                 cross.setFrame(2);
                 cross.footsteps = 2;
                 cross.body.setSize(16, 16);
                 this.crossesGrp.add(cross);
-
             }
 
         } else if (this.gamePlay.stepTutorialModal === 3) {
@@ -48,7 +47,8 @@ function uptateGameProgress() {
             this.arrowRight.setPosition(this.arrowRight.x, this.arrowRight.y + 64);
 
             if (this.firstTimeTutorial) {
-                updateCrossesOnTheFloor.call(this);
+
+                this.updateCrossesOnTheFloor();
                 const guest = this.physics.add.sprite(350, 300, "ada").setOrigin(.5).setInteractive({ cursor: "pointer" });;
                 guest.name = "guest-tutorial";
                 guest.status = CONST.GUEST_STATUS.OK;
@@ -58,7 +58,6 @@ function uptateGameProgress() {
                 guest.body.setSize(24, 32);
                 this.arrowDown.setPosition(guest.x, guest.y - 48);
                 this.guestsGrp.add(guest);
-
             }
 
         } else if (this.gamePlay.stepTutorialModal === 4) {
@@ -197,7 +196,6 @@ function showModalInfo(showTutorial) {
             this.physics.pause();
     }
     else if (!showTutorial) {
-
         this.gamePlay.pause = CONST.PAUSE.FALSE;
         if (!this.firstTimeTutorial)
             this.physics.resume();
@@ -216,7 +214,7 @@ function showModalInfo(showTutorial) {
         });
 
         let cross = this.crossesGrp.getChildren().find(v => v.name === "cross-tutorial");
-        this.guestsGrp.remove(cross, true, true);
+        this.crossesGrp.remove(cross, true, true);
 
         const waitingText = this.waitingTextGrp.getChildren().find(v => v.name === "waitingText-2");
         waitingText.registeredGuest = null;
@@ -229,9 +227,7 @@ function showModalInfo(showTutorial) {
         waitingGear.setDepth(5);
 
         this.gamePlay.stepTutorialModal = -1;
-
     }
-
 }
 
 function typeWriterHandler(data) {
@@ -276,7 +272,8 @@ function placesAvailableOnTheLine() {
             name: child.name,
             x: child.x,
             y: child.y,
-            isBusyPlace: child.isBusyPlace
+            isBusyPlace: child.isBusyPlace,
+            footsteps: child.footsteps
         })
     });
     crossesPosList.sort(function (a, b) {
@@ -289,9 +286,16 @@ function placesAvailableOnTheLine() {
         return 0;
     });
 
-    const firtsElement = crossesPosList.find(v => v.isBusyPlace === false);
-    if (!firtsElement)
+    const firtsElement = crossesPosList.find(v => v.isBusyPlace === false && v.footsteps < 4);
+    if (!firtsElement) {
+
+        let cross = this.crossesGrp.getChildren().find(v => v.name === "cross-tutorial");
+        this.crossesGrp.remove(cross, true, true);
+
         return null;
+    
+
+    }
     const availableCrosses = crossesPosList.filter(function (cross) {
         return cross.y === firtsElement.y && !cross.isBusyPlace;
     });
@@ -340,9 +344,14 @@ function updateCrossesOnTheFloor(update) {
             callback: () => {
                 const cross = this.physics.add.sprite(posX, posY, "cross").setOrigin(.5).setInteractive({ cursor: "pointer" });;
                 cross.setDepth(1);
-                cross.setFrame(4);
                 cross.setName("cross-" + timer.getRepeatCount());
-                cross.footsteps = 4;
+                if (timer.getRepeatCount() >= 10) {
+                    cross.footsteps = 0;
+                    cross.setFrame(0);
+                } else {
+                    cross.footsteps = 4;
+                    cross.setFrame(4);
+                }
                 cross.isBusyPlace = false;
                 cross.body.setSize(16, 16)
                 this.crossesGrp.add(cross);
@@ -395,5 +404,6 @@ export {
     overlapAreas,
     overlapGuests,
     uptateGameProgress,
-    resetGamePlay
+    resetGamePlay,
+    updateCrossesOnTheFloor
 }
