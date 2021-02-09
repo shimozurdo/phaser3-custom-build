@@ -4,6 +4,7 @@
   "description": "Custom Phaser 3 build for Jamming the Curve",
   "main": "index.js",
   "scripts": {
+    "start": "live-server --open=game/index.html",
     "build": "webpack --display-modules"
   },
   "repository": {
@@ -19,6 +20,7 @@
   "dependencies": {
     "clean-webpack-plugin": "^3.0.0",
     "eventemitter3": "^4.0.7",
+    "live-server": "^1.2.1",
     "phaser": "^3.24.1",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.44.2",
